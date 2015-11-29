@@ -69,3 +69,7 @@ Disable T001 only when it is explicitly mentioned
 
   putty-ignore =
     /# !qa:.*T001/ : +T001
+
+Disable D205, D400 and D401 for `__init__` methods:
+
+  /__init__/ : +D205,D400,D401
