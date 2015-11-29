@@ -1,0 +1,23 @@
+language: python
+sudo: false
+
+python:
+- 2.6
+- 2.7
+- 3.3
+- 3.4
+- 3.5
+- pypy
+
+env:
+  matrix:
+    - TOX_SUFFIX="flakes"
+
+install:
+- pip install tox
+- python setup.py install
+
+script:
+- v=$TRAVIS_PYTHON_VERSION
+- if [[ ${v%py} != $v ]]; then TOXPY=$v; else TOXPY=py"${v/./}"; fi
+- tox -e "${TOXPY}-${TOX_SUFFIX}"
