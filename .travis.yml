@@ -14,6 +14,11 @@ env:
     - TOX_SUFFIX="flakes"
     - TOX_SUFFIX="green"
 
+matrix:
+  allow_failures:
+    - env: TOX_SUFFIX="green"
+      python: 2.6
+
 install:
 - pip install tox
 - python setup.py install
