@@ -1,6 +1,14 @@
 Flake8 Putty
 ============
 
+.. image:: https://secure.travis-ci.org/jayvdb/flake8-putty.png?branch=master
+   :alt: Build Status
+   :target: https://travis-ci.org/jayvdb/flake8-putty
+
+.. image:: https://badge.fury.io/py/flake8-putty.svg
+   :alt: Pypi Entry
+   :target: https://pypi.python.org/pypi/flake8-putty
+
 Flake8 Putty allows more control over errors reported by flake8,
 without adding noqa for every erroneous or undesirable error detected.
 
