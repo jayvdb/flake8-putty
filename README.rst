@@ -5,6 +5,10 @@ Flake8 Putty
    :alt: Build Status
    :target: https://travis-ci.org/jayvdb/flake8-putty
 
+.. image:: https://landscape.io/github/jayvdb/flake8-putty/master/landscape.svg?style=flat
+   :alt: Code Quality
+   :target: https://landscape.io/github/jayvdb/flake8-putty
+
 .. image:: https://badge.fury.io/py/flake8-putty.svg
    :alt: Pypi Entry
    :target: https://pypi.python.org/pypi/flake8-putty
