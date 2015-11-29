@@ -12,6 +12,7 @@ python:
 env:
   matrix:
     - TOX_SUFFIX="flakes"
+    - TOX_SUFFIX="green"
 
 install:
 - pip install tox
