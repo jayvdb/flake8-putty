@@ -7,8 +7,9 @@ without adding noqa for every erroneous or undesirable error detected.
 See https://gitlab.com/pycqa/flake8/issues/89 for some of the motivation
 for this extension.
 
-If you only want better `noqa` support, flake8-respect-noqa is a simpler
-extension which works only when multiprocessing is disabled.
+If you only want better `noqa` support,
+`flake8-respect-noqa <https://pypi.python.org/pypi/flake8-respect-noqa>`_
+is a simpler extension which works only when multiprocessing is disabled.
 
 Disabling erroneous or undesirable errors by adding `noqa` in the code
 may be undesirable for a number of reasons, including:
