@@ -5,6 +5,10 @@ Flake8 Putty
    :alt: Build Status
    :target: https://travis-ci.org/jayvdb/flake8-putty
 
+.. image:: http://codecov.io/github/jayvdb/flake8-putty/coverage.svg?branch=master
+   :alt: Coverage Status
+   :target: http://codecov.io/github/jayvdb/flake8-putty?branch=master
+
 .. image:: https://landscape.io/github/jayvdb/flake8-putty/master/landscape.svg?style=flat
    :alt: Code Quality
    :target: https://landscape.io/github/jayvdb/flake8-putty
