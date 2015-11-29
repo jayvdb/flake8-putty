@@ -72,4 +72,5 @@ Disable T001 only when it is explicitly mentioned
 
 Disable D205, D400 and D401 for `__init__` methods:
 
-  /__init__/ : +D205,D400,D401
+  putty-ignore =
+    /__init__/ : +D205,D400,D401
