@@ -37,7 +37,10 @@ def get_reporter_state():
 def putty_ignore_code(options, code):
     """Hook for pep8 'ignore_code'."""
     reporter, line_number, offset, text, check = get_reporter_state()
-    line = reporter.lines[line_number - 1]
+    try:
+        line = reporter.lines[line_number - 1]
+    except IndexError:
+        line = ''
 
     options.ignore = options._orig_ignore
     options.select = options._orig_select
