@@ -8,5 +8,6 @@
 .idea
 *.bak
 build
+.coverage
 dist
 docs/_build/

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """Allow more user control over ignoring flake8 errors."""
-from __future__ import absolute_import, unicode_literals, with_statement
+from __future__ import absolute_import, unicode_literals
 
 from flake8_putty.extension import PuttyExtension
 

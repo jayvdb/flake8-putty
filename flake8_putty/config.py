@@ -18,6 +18,11 @@ class Selector(object):
         """Constructor."""
         self._text = text
 
+    @property
+    def raw(self):
+        """Return raw selector text."""
+        return self._text
+
     def __eq__(self, other):
         return self.__class__ == other.__class__ and self._text == other._text
 
@@ -35,15 +40,10 @@ class RegexSelector(Selector):
         super(RegexSelector, self).__init__(text)
 
     @property
-    def raw(self):
-        """Return raw regex."""
-        return self._text
-
-    @property
     def regex(self):
         """Return compiled regex."""
         if not self._compiled_regex:
-            self._compiled_regex = re.compile(self._text)
+            self._compiled_regex = re.compile(self.raw)
         return self._compiled_regex
 
 
@@ -54,7 +54,7 @@ class FileSelector(Selector):
     @property
     def pattern(self):
         """Return file pattern."""
-        return self._text
+        return self.raw
 
 
 class CodeSelector(Selector):
@@ -64,7 +64,7 @@ class CodeSelector(Selector):
     @property
     def code(self):
         """Return selector code."""
-        return self._text
+        return self.raw
 
 
 class Rule(object):
@@ -95,8 +95,18 @@ class Rule(object):
             code.strip() for code in codes.split(',')
             if code.strip())
 
+    @property
+    def all_selectors(self):
+        """Iterable of all selectors."""
+        return self._selectors
+
     def __eq__(self, other):
-        return (self._selectors, self.codes) == (other._selectors, other.codes)
+        """True if other is instance of Rule with same codes and selectors."""
+        if isinstance(other, self.__class__):
+            return ((self._selectors, self.codes) ==
+                    (other.all_selectors, other.codes))
+
+        return False
 
     def file_match_any(self, filename):
         """Match any filename."""
@@ -195,7 +205,9 @@ class Parser(object):
                     selector = FileSelector(_selector)
                 else:
                     selector = CodeSelector(_selector)
+
                 selectors.append(selector)
 
             self.__rules.append(Rule(selectors, codes))
+
         return self.__rules
