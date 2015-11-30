@@ -103,6 +103,9 @@ class Rule(object):
         if filename.startswith('.' + os.sep):
             filename = filename[2:]
         for selector in self.file_selectors:
+            if (selector.pattern.endswith('/') and
+                    filename.startswith(selector.pattern)):
+                return True
             if fnmatch.fnmatch(filename, selector.pattern):
                 return True
         return False
