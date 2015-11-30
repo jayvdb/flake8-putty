@@ -24,7 +24,7 @@ class Selector(object):
         return self._text
 
     def __eq__(self, other):
-        return self.__class__ == other.__class__ and self._text == other._text
+        return self.__class__ == other.__class__ and self._text == other.raw
 
     def __repr__(self):
         return '%s(%r)' % (self.__class__.__name__, self._text)
