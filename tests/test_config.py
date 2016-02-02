@@ -177,3 +177,51 @@ class TestParser(TestCase):
         assert list(p._parsed_lines()) == [
             (2, ['E100', 'E101'], 'E200, E201'),
         ]
+
+
+class TestMatch(TestCase):
+
+    """Test config option rule parser."""
+
+    def test_selector_filename(self):
+        p = Parser('foo.py : E101')
+        assert p._rules[0].file_match_any('foo.py')
+        assert p._rules[0].file_match_any('./foo.py')
+        assert not p._rules[0].file_match_any('bar.py')
+        assert not p._rules[0].file_match_any('foo/bar.py')
+
+    def test_selector_filename_multi(self):
+        p = Parser('foo.py, bar.py : E101')
+        assert p._rules[0].file_match_any('foo.py')
+        assert p._rules[0].file_match_any('./foo.py')
+        assert p._rules[0].file_match_any('bar.py')
+        assert not p._rules[0].file_match_any('foo/bar.py')
+
+    def test_selector_directory(self):
+        p = Parser('tests/ : E101')
+        assert p._rules[0].file_match_any('tests/foo.py')
+        assert not p._rules[0].file_match_any('other/foo.py')
+
+    def test_selector_directory_multi(self):
+        p = Parser('tests/, vendor/ : E101')
+        assert p._rules[0].file_match_any('tests/foo.py')
+        assert p._rules[0].file_match_any('vendor/foo.py')
+        assert not p._rules[0].file_match_any('other/foo.py')
+
+    def test_selector_directory_wildcard(self):
+        p = Parser('tests/*/test_*.py : E101')
+        assert p._rules[0].file_match_any('tests/foo/test_bar.py')
+        assert p._rules[0].file_match_any('./tests/foo/bar/test_baz.py')
+        assert p._rules[0].file_match_any('tests/foo/bar/test_.py')
+        assert not p._rules[0].file_match_any('tests/test_foo.py')
+
+    def test_selector_directory_wildcard_nested(self):
+        p = Parser('tests/*/*/test_*.py : E101')
+        assert p._rules[0].file_match_any('tests/foo/bar/test_baz.py')
+        assert not p._rules[0].file_match_any('tests/foo/test_bar.py')
+
+    def test_selector_directory_wildcard_multi(self):
+        p = Parser('tests/*/test_*.py, vendor/*/test_*.py : E101')
+        assert p._rules[0].file_match_any('tests/foo/test_bar.py')
+        assert p._rules[0].file_match_any('vendor/foo/test_bar.py')
+        assert not p._rules[0].file_match_any('other/foo/test_bar.py')
