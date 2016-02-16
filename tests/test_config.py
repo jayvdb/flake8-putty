@@ -153,6 +153,19 @@ class TestParser(TestCase):
                  'E101'),
         ]
 
+        p = Parser('foo.py , /def foo/ : +E101')
+
+        assert list(p._parsed_lines()) == [
+            (1, ['foo.py', '/def foo/'], '+E101'),
+        ]
+
+        assert p._rules == [
+            Rule([FileSelector('foo.py'),
+                  RegexSelector('def foo'),
+                  ],
+                 'E101'),
+        ]
+
     def test_multiline(self):
         p = Parser("""
         E100 : E101
@@ -225,3 +238,7 @@ class TestMatch(TestCase):
         assert p._rules[0].file_match_any('tests/foo/test_bar.py')
         assert p._rules[0].file_match_any('vendor/foo/test_bar.py')
         assert not p._rules[0].file_match_any('other/foo/test_bar.py')
+
+    def test_combined_selectors(self):
+        p = Parser('test.py, /foo/ : E101')
+        assert p._rules[0].match('test.py', 'def foo', ['n/a'])

@@ -186,6 +186,7 @@ class Parser(object):
             assert codes
 
             selectors = SELECTOR_SPLITTER.findall(selectors)
+            selectors = [selector.strip() for selector in selectors]
 
             yield i, selectors, codes
 
