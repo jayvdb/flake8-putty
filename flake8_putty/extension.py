@@ -25,6 +25,12 @@ def ignore_code(options, code):
 
 def get_reporter_state():
     """Get pep8 reporter state from stack."""
+    # Stack
+    # 1. get_reporter_state (i.e. this function)
+    # 2. putty_ignore_code
+    # 3. QueueReport.error or pep8.StandardReport.error for flake8 -j 1
+    # 4. pep8.Checker.check_ast or check_physical or check_logical
+    #    locals contains `tree` (ast) for check_ast
     frame = sys._getframe(3)
     reporter = frame.f_locals['self']
     line_number = frame.f_locals['line_number']
