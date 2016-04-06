@@ -34,6 +34,7 @@ setup(
     url='https://github.com/jayvdb/flake8-putty',
     install_requires=[
         'flake8>=2.2.0',
+        'packaging>=16.0',
     ],
     license='MIT',
     packages=[str('flake8_putty')],

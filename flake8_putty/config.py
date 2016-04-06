@@ -7,7 +7,20 @@ import os
 import re
 import sys
 
+try:
+    from packaging import markers
+except ImportError:
+    markers = None
+
 SELECTOR_SPLITTER = re.compile(r' *(/.*?(?<!\\)/|[^/][^,]*) *,?')
+
+ENVIRONMENT_MARKER_PREFIXES = (
+    'os_',
+    'sys_',
+    'platform_',
+    'python_',
+    'implementation_',
+)
 
 
 class Selector(object):
@@ -67,6 +80,27 @@ class CodeSelector(Selector):
         return self.raw
 
 
+class EnvironmentMarkerSelector(Selector):
+
+    """Existing code selector."""
+
+    def __init__(self, text):
+        """Constructor."""
+        self._marker = None
+        super(EnvironmentMarkerSelector, self).__init__(text)
+
+    @property
+    def marker(self):
+        """Return environment marker."""
+        if not self._marker:
+            self._marker = markers.Marker(self.raw)
+        return self._marker
+
+    def evaluate(self, environment=None):
+        """Evaluate the environment marker."""
+        return self.marker.evaluate(environment)
+
+
 class Rule(object):
 
     """Rule containing selectors and codes to be used."""
@@ -83,6 +117,15 @@ class Rule(object):
         self.code_selectors = [
             selector for selector in selectors
             if isinstance(selector, CodeSelector)]
+
+        environment_marker_selectors = [
+            selector for selector in selectors
+            if isinstance(selector, EnvironmentMarkerSelector)]
+        assert len(environment_marker_selectors) < 2
+        if environment_marker_selectors:
+            self.environment_marker_selector = environment_marker_selectors[0]
+        else:
+            self.environment_marker_selector = None
 
         codes = codes.strip()
         if codes.startswith('+'):
@@ -134,10 +177,19 @@ class Rule(object):
                 return True
         return False
 
+    def environment_marker_evaluate(self):
+        """Evaluate the environment marker."""
+        if self.environment_marker_selector:
+            if self.environment_marker_selector.evaluate():
+                return True
+        return False
+
     def match(self, filename, line, codes):
         """Match rule."""
         return ((not self.file_selectors or self.file_match_any(filename)) and
                 (not self.regex_selectors or self.regex_match_any(line)) and
+                (not self.environment_marker_selector or
+                 self.environment_marker_evaluate()) and
                 (not self.code_selectors or self.codes_match_any(codes)))
 
     def __repr__(self):
@@ -204,6 +256,9 @@ class Parser(object):
                     selector = RegexSelector(_selector[1:-1])
                 elif _selector.endswith('.py') or _selector.endswith('/'):
                     selector = FileSelector(_selector)
+                elif any(_selector.startswith(x)
+                         for x in ENVIRONMENT_MARKER_PREFIXES):
+                    selector = EnvironmentMarkerSelector(_selector)
                 else:
                     selector = CodeSelector(_selector)
 

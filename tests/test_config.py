@@ -6,6 +6,7 @@ from unittest import TestCase
 
 from flake8_putty.config import (
     CodeSelector,
+    EnvironmentMarkerSelector,
     FileSelector,
     Parser,
     RegexSelector,
@@ -43,6 +44,21 @@ class TestParser(TestCase):
 
         assert p._rules == [
             Rule([CodeSelector('E100'), CodeSelector('E200')], 'E101'),
+        ]
+
+    def test_selector_marker(self):
+        p = Parser("python_version == '2.4' : E101")
+        assert list(p._lines()) == [
+            (1, "python_version == '2.4' : E101"),
+        ]
+
+        assert list(p._parsed_lines()) == [
+            (1, ["python_version == '2.4'"], 'E101'),
+        ]
+
+        assert p._rules == [
+            Rule([EnvironmentMarkerSelector("python_version == '2.4'")],
+                 'E101'),
         ]
 
     def test_selector_filename(self):
@@ -209,6 +225,13 @@ class TestMatch(TestCase):
         assert p._rules[0].file_match_any('./foo.py')
         assert p._rules[0].file_match_any('bar.py')
         assert not p._rules[0].file_match_any('foo/bar.py')
+
+    def test_selector_environment_marker(self):
+        p = Parser("python_version == '2.4' : E101")
+        assert not p._rules[0].environment_marker_evaluate()
+
+        p = Parser("python_version > '2.4' : E101")
+        assert p._rules[0].environment_marker_evaluate()
 
     def test_selector_directory(self):
         p = Parser('tests/ : E101')
