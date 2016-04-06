@@ -82,12 +82,21 @@ Disable only D102 on foo.py
   putty-ignore =
     foo.py : D102
 
+Disable D205, D400 and D401 for `__init__` methods:
+
+  putty-ignore =
+    /__init__/ : +D205,D400,D401
+
 Disable T001 only when it is explicitly mentioned
 
   putty-ignore =
     /# !qa:.*T001/ : +T001
 
-Disable D205, D400 and D401 for `__init__` methods:
+Disable any code that is explicitly mentioned
 
   putty-ignore =
-    /__init__/ : +D205,D400,D401
+    /# !qa: *(?P<codes>[A-Z0-9, ]*)/ : +(?P<codes>)
+
+Disable any code that occurs after # flake8: disable=
+
+  putty-auto-ignore = True

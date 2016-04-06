@@ -5,7 +5,7 @@ from __future__ import absolute_import, unicode_literals
 import functools
 import sys
 
-from flake8_putty.config import Parser
+from flake8_putty.config import Parser, RegexRule, RegexSelector
 
 
 # Copied from pep.StyleGuide.ignore_code
@@ -68,6 +68,30 @@ def putty_ignore_code(options, code):
     return ignore_code(options, code)
 
 
+class AutoLineDisableSelector(RegexSelector):
+
+    """Auto-selector."""
+
+    _text = '#.*flake8: disable=(?P<codes>[A-Z0-9, ]*)'
+
+    def __repr__(self):
+        return 'AutoLineDisableSelector()'
+
+
+class AutoLineDisableRule(RegexRule):
+
+    """Rule matching # flake8: disable=x,y ."""
+
+    def __init__(self):
+        """Constructor."""
+        super(AutoLineDisableRule, self).__init__(
+            [AutoLineDisableSelector()],
+            ['(?P<codes>)'])
+
+    def __repr__(self):
+        return 'AutoLineDisableRule()'
+
+
 class PuttyExtension(object):
 
     """Flake8 extension for customising error reporting."""
@@ -87,8 +111,12 @@ class PuttyExtension(object):
                           help='putty select list')
         parser.add_option('--putty-ignore', metavar='errors', default='',
                           help='putty ignore list')
+        parser.add_option('--putty-auto-ignore', action='store_true',
+                          help='putty auto ignore lines matching '
+                               '# flake8: disable=<code>,<code>')
         parser.config_options.append('putty-select')
         parser.config_options.append('putty-ignore')
+        parser.config_options.append('putty-auto-ignore')
 
     @classmethod
     def parse_options(cls, options):
@@ -101,6 +129,9 @@ class PuttyExtension(object):
 
         options.putty_select = Parser(options.putty_select)._rules
         options.putty_ignore = Parser(options.putty_ignore)._rules
+
+        if options.putty_auto_ignore:
+            options.putty_ignore.append(AutoLineDisableRule())
 
         options.ignore_code = functools.partial(
             putty_ignore_code,

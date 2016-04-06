@@ -13,6 +13,10 @@ from flake8_putty.config import (
     Rule,
 )
 
+from flake8_putty.extension import (
+    AutoLineDisableRule,
+)
+
 
 class TestParser(TestCase):
 
@@ -155,6 +159,38 @@ class TestParser(TestCase):
             Rule([RegexSelector('(a, b)'), RegexSelector('(c, d)')], 'E101'),
         ]
 
+    def test_selector_regex_codes(self):
+        p = Parser('/# !qa: *(?P<codes>[A-Z0-9, ]*)/ : (?P<codes>)')
+
+        assert list(p._lines()) == [
+            (1, '/# !qa: *(?P<codes>[A-Z0-9, ]*)/ : (?P<codes>)'),
+        ]
+
+        assert list(p._parsed_lines()) == [
+            (1, ['/# !qa: *(?P<codes>[A-Z0-9, ]*)/'], '(?P<codes>)'),
+        ]
+
+        assert p._rules == [
+            Rule([RegexSelector('# !qa: *(?P<codes>[A-Z0-9, ]*)')],
+                 '(?P<codes>)'),
+        ]
+
+    def test_selector_regex_codes_append(self):
+        p = Parser('/# !qa: *(?P<codes>[A-Z0-9, ]*)/ : +(?P<codes>)')
+
+        assert list(p._lines()) == [
+            (1, '/# !qa: *(?P<codes>[A-Z0-9, ]*)/ : +(?P<codes>)'),
+        ]
+
+        assert list(p._parsed_lines()) == [
+            (1, ['/# !qa: *(?P<codes>[A-Z0-9, ]*)/'], '+(?P<codes>)'),
+        ]
+
+        assert p._rules == [
+            Rule([RegexSelector('# !qa: *(?P<codes>[A-Z0-9, ]*)')],
+                 '(?P<codes>)'),
+        ]
+
     def test_mixed(self):
         p = Parser('/(a, b)/ , C001, foo.py : E101')
 
@@ -219,6 +255,11 @@ class TestMatch(TestCase):
         assert not p._rules[0].file_match_any('bar.py')
         assert not p._rules[0].file_match_any('foo/bar.py')
 
+    def test_selector_filename_missing(self):
+        """Test that file_match_any isnt True if there are no filename rules."""
+        p = Parser('/foo/ : E101')
+        assert not p._rules[0].file_match_any(' foo ')
+
     def test_selector_filename_multi(self):
         p = Parser('foo.py, bar.py : E101')
         assert p._rules[0].file_match_any('foo.py')
@@ -261,6 +302,49 @@ class TestMatch(TestCase):
         assert p._rules[0].file_match_any('tests/foo/test_bar.py')
         assert p._rules[0].file_match_any('vendor/foo/test_bar.py')
         assert not p._rules[0].file_match_any('other/foo/test_bar.py')
+
+    def test_selector_regex(self):
+        p = Parser('/foo/ : E101')
+        assert p._rules[0].regex_match_any(' foo bar ')
+        assert not p._rules[0].regex_match_any(' bar ')
+
+    def test_selector_regex_multi(self):
+        p = Parser('/foo/ , /bar/ : E101')
+        assert p._rules[0].regex_match_any(' foo bar ')
+        assert p._rules[0].regex_match_any(' bar ')
+        assert not p._rules[0].regex_match_any(' baz ')
+
+    def test_selector_regex_codes(self):
+        p = Parser('/# !qa: *(?P<codes>[A-Z0-9, ]*)/ : (?P<codes>)')
+        assert p._rules[0].regex_match_any(' foo bar # !qa: E101', ['E101'])
+        assert not p._rules[0].regex_match_any(' baz # !qa: E101', ['E102'])
+
+    def test_selector_regex_codes_append(self):
+        p = Parser('/# !qa: *(?P<codes>[A-Z0-9, ]*)/ : +(?P<codes>)')
+        assert p._rules[0].regex_match_any(' foo bar # !qa: E101', ['E101'])
+        assert not p._rules[0].regex_match_any(' baz # !qa: E101', ['E102'])
+
+    def test_selector_auto(self):
+        rule = AutoLineDisableRule()
+        assert rule.regex_match_any('foo # flake8: disable=E101', ['E101'])
+        assert not rule.regex_match_any('foo # flake8: disable=E101', ['E102'])
+
+    def test_selector_auto_multi(self):
+        rule = AutoLineDisableRule()
+        assert rule.regex_match_any('# flake8: disable=E101, E102', ['E101'])
+        assert rule.regex_match_any('# flake8: disable=E101, E102', ['E102'])
+        assert not rule.regex_match_any('# flake8: disable=E10', ['E102'])
+
+    def test_selector_auto_unrelated(self):
+        rule = AutoLineDisableRule()
+        assert rule.regex_match_any(
+            '# flake8: disable=E101 pylint: disable=E102', ['E101'])
+        assert not rule.regex_match_any(
+            '# flake8: disable=E101 pylint: disable=E102', ['E102'])
+        assert rule.regex_match_any(
+            '# pylint: disable=E102 flake8: disable=E101', ['E101'])
+        assert not rule.regex_match_any(
+            '# pylint: disable=E102 flake8: disable=E101', ['E102'])
 
     def test_combined_selectors(self):
         p = Parser('test.py, /foo/ : E101')
