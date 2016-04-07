@@ -37,6 +37,7 @@ matrix:
     - env: TOXENV=green
       python: pypy3
 
+
 script:
 - pip install tox
 - if [[ "$TRAVIS_PYTHON_VERSION" == "3.2" ]]; then pip install 'virtualenv<14' ; fi
