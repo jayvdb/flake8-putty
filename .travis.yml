@@ -4,6 +4,8 @@ sudo: false
 python:
 - 2.6
 - 2.7
+- 3.0
+- 3.1
 - 3.2
 - 3.3
 - 3.4
@@ -39,5 +41,5 @@ install:
 - pip install tox
 
 script:
-- if [[ "$TRAVIS_PYTHON_VERSION" == "3.2" ]]; then pip install 'virtualenv<14' ; fi
+- if [[ "$TRAVIS_PYTHON_VERSION" == "3.2" || "$TRAVIS_PYTHON_VERSION" == "3.1" || "$TRAVIS_PYTHON_VERSION" == "3.0" ]]; then pip install 'virtualenv<14' ; fi
 - tox
