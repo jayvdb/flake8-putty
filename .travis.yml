@@ -12,22 +12,17 @@ python:
 
 env:
   matrix:
-    - TOX_SUFFIX="flakes-v250"
-    - TOX_SUFFIX="flakes-v241"
-    - TOX_SUFFIX="flakes-v240"
-    - TOX_SUFFIX="flakes-v230"
-    - TOX_SUFFIX="flakes-v224"
-    - TOX_SUFFIX="flakes-v220"
-    - TOX_SUFFIX="green"
+    - TOXENV=flakes-v250,flakes-v241,flakes-v230,flakes-v224,flakes-v220
+    - TOXENV=green
 
 matrix:
   allow_failures:
-    - env: TOX_SUFFIX="green"
+    - env: TOXENV=green
       python: 2.6
 
 install:
-- pip install tox-travis
+- pip install tox
 - python setup.py install
 
 script:
-- tox -e $TOX_SUFFIX
+- tox
