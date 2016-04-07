@@ -43,5 +43,6 @@ script:
 - if [[ "$TRAVIS_PYTHON_VERSION" == "3.2" ]]; then pip install 'virtualenv<14' ; fi
 # tox -vv gives run times for each action
 - tox -vvv
+- cat /home/travis/build/jayvdb/flake8-putty/.tox/*/log/*.log
 
 cache: pip
