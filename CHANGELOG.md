@@ -2,6 +2,9 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.3.1] - 2016-04-07
+- Fix predefined ignore pattern
+
 ## [0.3.0] - 2016-04-06
 - Allow regex selector to use codes extracted from each line
 - Add predefined ignore pattern `# flake8: disable=<codes>`

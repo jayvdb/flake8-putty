@@ -87,6 +87,7 @@ class AutoLineDisableRule(RegexRule):
         super(AutoLineDisableRule, self).__init__(
             [AutoLineDisableSelector()],
             ['(?P<codes>)'])
+        self._append_codes = True
 
     def __repr__(self):
         return 'AutoLineDisableRule()'

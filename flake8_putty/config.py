@@ -182,7 +182,7 @@ class RegexRule(RuleBase):
         """Match rule."""
         if self.regex_match_any(line, codes):
             if self.codes == ['(?P<codes>)']:
-                self.codes = tuple(codes)
+                self.codes = tuple([codes[-1]])
             return True
 
 
