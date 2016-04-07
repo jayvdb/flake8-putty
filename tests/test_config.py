@@ -329,6 +329,11 @@ class TestMatch(TestCase):
         assert rule.regex_match_any('foo # flake8: disable=E101', ['E101'])
         assert not rule.regex_match_any('foo # flake8: disable=E101', ['E102'])
 
+    def test_selector_auto_missing_code(self):
+        rule = AutoLineDisableRule()
+        assert not rule.regex_match_any('foo # flake8: disable=', ['E101'])
+        assert not rule.regex_match_any('foo # flake8: disable=', ['E102'])
+
     def test_selector_auto_multi(self):
         rule = AutoLineDisableRule()
         assert rule.regex_match_any('# flake8: disable=E101, E102', ['E101'])
