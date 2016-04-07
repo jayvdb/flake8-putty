@@ -12,6 +12,8 @@ python:
 - pypy3
 
 env:
+  global:
+    - PIP_DOWNLOAD_CACHE=$HOME/.cache/pip
   matrix:
     - TOXENV=flakes-v250,flakes-v241,flakes-v230,flakes-v224,flakes-v220
     - TOXENV=green
@@ -35,9 +37,9 @@ matrix:
     - env: TOXENV=green
       python: pypy3
 
-install:
-- pip install tox
-
 script:
+- pip install tox
 - if [[ "$TRAVIS_PYTHON_VERSION" == "3.2" ]]; then pip install 'virtualenv<14' ; fi
 - tox
+
+cache: pip
