@@ -42,6 +42,6 @@ script:
 - pip install tox
 - if [[ "$TRAVIS_PYTHON_VERSION" == "3.2" ]]; then pip install 'virtualenv<14' ; fi
 # tox -vv gives run times for each action
-- tox -vv
+- tox -vvv
 
 cache: pip
