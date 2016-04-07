@@ -11,6 +11,8 @@ python:
 - pypy3
 
 env:
+  global:
+    - PIP_DOWNLOAD_CACHE=$HOME/.cache/pip
   matrix:
     - TOX_SUFFIX="flakes-v250"
     - TOX_SUFFIX="flakes-v241"
@@ -25,9 +27,10 @@ matrix:
     - env: TOX_SUFFIX="green"
       python: 2.6
 
-install:
+before_install:
 - pip install tox-travis
-- python setup.py install
 
 script:
 - tox -e $TOX_SUFFIX
+
+cache: pip
