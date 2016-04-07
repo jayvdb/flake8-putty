@@ -4,6 +4,7 @@ sudo: false
 python:
 - 2.6
 - 2.7
+- 3.2
 - 3.3
 - 3.4
 - 3.5
@@ -14,15 +15,29 @@ env:
   matrix:
     - TOXENV=flakes-v250,flakes-v241,flakes-v230,flakes-v224,flakes-v220
     - TOXENV=green
+    - TOXENV=pytest
 
 matrix:
-  allow_failures:
+  include:
+    - env: TOXENV=test
+      python: 3.4
+  exclude:
+    # green does not work on Python 2.6
     - env: TOXENV=green
       python: 2.6
+    # Remove some other green and pytest builds as they are almost identical
+    - env: TOXENV=pytest
+      python: 3.2
+    - env: TOXENV=green
+      python: 3.3
+    - env: TOXENV=pytest
+      python: pypy
+    - env: TOXENV=green
+      python: pypy3
 
 install:
 - pip install tox
-- python setup.py install
 
 script:
+- if [[ "$TRAVIS_PYTHON_VERSION" == "3.2" ]]; then pip install 'virtualenv<14' ; fi
 - tox

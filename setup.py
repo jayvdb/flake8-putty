@@ -3,7 +3,29 @@
 """Flake8 putty setup module."""
 from __future__ import unicode_literals, with_statement
 
+import sys
+
 from setuptools import setup
+
+from setuptools.command.test import test as TestCommand
+
+
+class PyTest(TestCommand):
+
+    """Test harness."""
+
+    user_options = []
+
+    def initialize_options(self):
+        """Initialise options hook."""
+        TestCommand.initialize_options(self)
+        self.pytest_args = []
+
+    def run_tests(self):
+        """Run tests hook."""
+        import pytest
+        errno = pytest.main(self.pytest_args)
+        sys.exit(errno)
 
 
 def get_version(fname='flake8_putty/__init__.py'):
@@ -22,6 +44,10 @@ def get_long_description():
             descr.append(f.read())
     return '\n\n'.join(descr)
 
+
+tests_require = ['pytest']
+if sys.version_info < (3, 3):
+    tests_require.append('mock')
 
 setup(
     name='flake8-putty',
@@ -56,4 +82,6 @@ setup(
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Topic :: Software Development :: Quality Assurance',
     ],
+    tests_require=tests_require,
+    cmdclass={'test': PyTest},
 )
