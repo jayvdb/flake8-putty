@@ -13,7 +13,7 @@ from flake8 import engine
 
 # Ignore unrelated flake8 plugins
 IGNORE_LIST = ('FI', 'D')
-_IGNORE_OPTION = '--ignore=%s' % ','.join(IGNORE_LIST)
+_IGNORE_OPTION = '--ignore={0}'.format(','.join(IGNORE_LIST))
 
 
 class TestIntegration(TestCase):

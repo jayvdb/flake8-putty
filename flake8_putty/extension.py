@@ -10,7 +10,8 @@ from flake8_putty.config import Parser, RegexRule, RegexSelector
 
 # Copied from pep.StyleGuide.ignore_code
 def ignore_code(options, code):
-    """Check if the error code should be ignored.
+    """
+    Check if the error code should be ignored.
 
     If 'options.select' contains a prefix of the error code,
     return False.  Else, if 'options.ignore' contains a prefix of
@@ -103,7 +104,6 @@ class PuttyExtension(object):
     def __init__(self):
         """Constructor."""
         # Must exist for flake8 inspection of the extension
-        pass
 
     @classmethod
     def add_options(cls, parser):
@@ -113,8 +113,8 @@ class PuttyExtension(object):
         parser.add_option('--putty-ignore', metavar='errors', default='',
                           help='putty ignore list')
         parser.add_option('--putty-auto-ignore', action='store_true',
-                          help='putty auto ignore lines matching '
-                               '# flake8: disable=<code>,<code>')
+                          help=('putty auto ignore lines matching '
+                                '# flake8: disable=<code>,<code>'))
         parser.config_options.append('putty-select')
         parser.config_options.append('putty-ignore')
         parser.config_options.append('putty-auto-ignore')
