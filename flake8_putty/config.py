@@ -151,7 +151,8 @@ class RegexRule(RuleBase):
             selector for selector in selectors
             if isinstance(selector, RegexSelector)]
 
-        if '(?P<codes>)' in codes:
+        self._vary_codes = '(?P<codes>)' in codes
+        if self._vary_codes:
             assert len(codes) == 1
 
         super(RegexRule, self).__init__(selectors, codes)
@@ -179,9 +180,9 @@ class RegexRule(RuleBase):
         return False
 
     def match(self, filename, line, codes):
-        """Match rule."""
+        """Match rule and set attribute codes."""
         if self.regex_match_any(line, codes):
-            if self.codes == ['(?P<codes>)']:
+            if self._vary_codes:
                 self.codes = tuple([codes[-1]])
             return True
 
