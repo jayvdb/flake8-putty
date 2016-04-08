@@ -1,0 +1,27 @@
+environment:
+  matrix:
+    - PYTHON: "C:\\Python27"
+      APPVEYOR_PYTHON_VERSION: "2.7.x" # currently 2.7.11
+
+    - PYTHON: "C:\\Python34"
+      APPVEYOR_PYTHON_VERSION: "3.4.x" # currently 3.4.3
+
+init:
+  - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
+  - "ECHO PATH=%PATH%"
+  - python --version
+
+build: off
+
+install:
+  - pip install tox wheel
+
+test_script:
+  - tox -e pytest
+  - tox -e flakes-v250,flakes-v241,flakes-v230,flakes-v224,flakes-v220
+
+deploy_script:
+  - python setup.py sdist bdist_wheel
+
+artifacts:
+  - path: dist\* .coverage coverage.xml

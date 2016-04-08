@@ -12,6 +12,8 @@ try:
 except ImportError:
     markers = None
 
+IS_WINDOWS = (sys.platform == 'win32')
+
 SELECTOR_SPLITTER = re.compile(r' *(/.*?(?<!\\)/|[^/][^,]*) *,?')
 
 ENVIRONMENT_MARKER_PREFIXES = (
@@ -236,7 +238,10 @@ class Rule(RegexRule):
     def file_match_any(self, filename):
         """Match any filename."""
         if filename.startswith('.' + os.sep):
-            filename = filename[2:]
+            filename = filename[len(os.sep) + 1:]
+        if os.sep != '/':
+            filename = filename.replace(os.sep, '/')
+
         for selector in self.file_selectors:
             if (selector.pattern.endswith('/') and
                     filename.startswith(selector.pattern)):
