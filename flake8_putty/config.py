@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """Flake8 putty configuration."""
-from __future__ import unicode_literals
+from __future__ import absolute_import, unicode_literals
 
 import fnmatch
 import os

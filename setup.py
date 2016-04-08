@@ -1,13 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """Flake8 putty setup module."""
-from __future__ import unicode_literals, with_statement
+from __future__ import absolute_import, unicode_literals, with_statement
 
 import sys
 
 from setuptools import setup
-
-from setuptools.command.test import test as TestCommand
+from setuptools.command.test import test as TestCommand  # flake8: disable=H306,N812
 
 
 class PyTest(TestCommand):

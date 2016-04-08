@@ -12,10 +12,7 @@ from flake8_putty.config import (
     RegexSelector,
     Rule,
 )
-
-from flake8_putty.extension import (
-    AutoLineDisableRule,
-)
+from flake8_putty.extension import AutoLineDisableRule
 
 
 class TestParser(TestCase):
