@@ -87,7 +87,8 @@ class AutoLineDisableRule(RegexRule):
         """Constructor."""
         super(AutoLineDisableRule, self).__init__(
             [AutoLineDisableSelector()],
-            ['(?P<codes>)'])
+            ['(?P<codes>)'],
+        )
         self._append_codes = True
 
     def __repr__(self):
@@ -108,13 +109,19 @@ class PuttyExtension(object):
     @classmethod
     def add_options(cls, parser):
         """Add options for command line and config file."""
-        parser.add_option('--putty-select', metavar='errors', default='',
-                          help='putty select list')
-        parser.add_option('--putty-ignore', metavar='errors', default='',
-                          help='putty ignore list')
-        parser.add_option('--putty-auto-ignore', action='store_true',
-                          help=('putty auto ignore lines matching '
-                                '# flake8: disable=<code>,<code>'))
+        parser.add_option(
+            '--putty-select', metavar='errors', default='',
+            help='putty select list',
+        )
+        parser.add_option(
+            '--putty-ignore', metavar='errors', default='',
+            help='putty ignore list',
+        )
+        parser.add_option(
+            '--putty-auto-ignore', action='store_true',
+            help=('putty auto ignore lines matching '
+                  '# flake8: disable=<code>,<code>'),
+        )
         parser.config_options.append('putty-select')
         parser.config_options.append('putty-ignore')
         parser.config_options.append('putty-auto-ignore')
@@ -136,6 +143,7 @@ class PuttyExtension(object):
 
         options.ignore_code = functools.partial(
             putty_ignore_code,
-            options)
+            options,
+        )
 
         options.report._ignore_code = options.ignore_code

@@ -58,8 +58,10 @@ class TestParser(TestCase):
         ]
 
         assert p._rules == [
-            Rule([EnvironmentMarkerSelector("python_version == '2.4'")],
-                 'E101'),
+            Rule(
+                [EnvironmentMarkerSelector("python_version == '2.4'")],
+                'E101',
+            ),
         ]
 
     def test_selector_filename(self):
@@ -168,8 +170,10 @@ class TestParser(TestCase):
         ]
 
         assert p._rules == [
-            Rule([RegexSelector('# !qa: *(?P<codes>[A-Z0-9, ]*)')],
-                 '(?P<codes>)'),
+            Rule(
+                [RegexSelector('# !qa: *(?P<codes>[A-Z0-9, ]*)')],
+                '(?P<codes>)',
+            ),
         ]
 
     def test_selector_regex_codes_append(self):
@@ -184,8 +188,10 @@ class TestParser(TestCase):
         ]
 
         assert p._rules == [
-            Rule([RegexSelector('# !qa: *(?P<codes>[A-Z0-9, ]*)')],
-                 '(?P<codes>)'),
+            Rule(
+                [RegexSelector('# !qa: *(?P<codes>[A-Z0-9, ]*)')],
+                '(?P<codes>)',
+            ),
         ]
 
     def test_mixed(self):
@@ -196,10 +202,14 @@ class TestParser(TestCase):
         ]
 
         assert p._rules == [
-            Rule([RegexSelector('(a, b)'),
-                  CodeSelector('C001'),
-                  FileSelector('foo.py')],
-                 'E101'),
+            Rule(
+                [
+                    RegexSelector('(a, b)'),
+                    CodeSelector('C001'),
+                    FileSelector('foo.py'),
+                ],
+                'E101',
+            ),
         ]
 
         p = Parser('foo.py , /def foo/ : +E101')
@@ -209,10 +219,10 @@ class TestParser(TestCase):
         ]
 
         assert p._rules == [
-            Rule([FileSelector('foo.py'),
-                  RegexSelector('def foo'),
-                  ],
-                 'E101'),
+            Rule(
+                [FileSelector('foo.py'), RegexSelector('def foo')],
+                'E101',
+            ),
         ]
 
     def test_multiline(self):
@@ -340,13 +350,17 @@ class TestMatch(TestCase):
     def test_selector_auto_unrelated(self):
         rule = AutoLineDisableRule()
         assert rule.regex_match_any(
-            '# flake8: disable=E101 pylint: disable=E102', ['E101'])
+            '# flake8: disable=E101 pylint: disable=E102', ['E101'],
+        )
         assert not rule.regex_match_any(
-            '# flake8: disable=E101 pylint: disable=E102', ['E102'])
+            '# flake8: disable=E101 pylint: disable=E102', ['E102'],
+        )
         assert rule.regex_match_any(
-            '# pylint: disable=E102 flake8: disable=E101', ['E101'])
+            '# pylint: disable=E102 flake8: disable=E101', ['E101'],
+        )
         assert not rule.regex_match_any(
-            '# pylint: disable=E102 flake8: disable=E101', ['E102'])
+            '# pylint: disable=E102 flake8: disable=E101', ['E102'],
+        )
 
     def test_combined_selectors(self):
         p = Parser('test.py, /foo/ : E101')
