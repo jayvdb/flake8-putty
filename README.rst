@@ -33,6 +33,7 @@ may be undesirable for a number of reasons, including:
 - the 'error' appears frequently
 - the module is strictly in maintenance mode only
 - it causes a line to break the line length rule
+- the error should be ignored on only some versions or platforms
 
 Installation
 ------------
@@ -46,18 +47,24 @@ Check that flake8 finds it::
 
   $ flake8 --version
 
-  2.4.1 (pep8: 1.5.7, flake8-putty: 0.1.0, mccabe: 0.3.1, pyflakes: 0.8.1) CPython 2.7.6 on Linux
+  2.4.1 (pep8: 1.5.7, flake8-putty: 0.3.2, mccabe: 0.3.1, pyflakes: 0.8.1) CPython 2.7.6 on Linux
 
 Usage
 -----
 
-flake8-putty is not activated unless `putty-ignore` or `putty-select` appear
-in the configuration file or command line options.
+flake8-putty is not activated unless `putty-auto-ignore`, `putty-ignore`
+or `putty-select` appear in the configuration file or command line options.
+
+Auto ignore detects comments on each line like `..  # flake8: disable=xxxx`.
 
 `putty-ignore` and `putty-select` both support multiline values, and each
 line is a rule which should have the format:
 
-  <selectors> : <codes>
+  <selectors> : <modifier><codes>
+
+The codes are flake8 codes to use when the rule is matched.
+The only modifier is `+` which appends the codes to the list of codes from
+other rules.
 
 Selectors may contain one or more of:
 - file patterns
@@ -67,7 +74,9 @@ Selectors may contain one or more of:
 When multiple file pattern selectors are used, only one of the file patterns
 needs to match the filename.
 Likewise only one of many regex and only one of many codes needs to be matched.
-However types of selectors are combined, each type of selector must be matched.
+
+However when different types of selectors are combined in one rule,
+each type of selector must be matched.
 
 e.g. when two filenames and two regex are used, at least one filename and one
 regex must match before the rule is activated.
