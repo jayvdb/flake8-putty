@@ -92,11 +92,13 @@ class TestIntegration(TestCase):
             )
 
     def test_auto_ignore_multi_filename(self):
+        # Use a real filename `tests/__init__.py` to avoid
+        # https://github.com/ar4s/flake8_tuple/issues/8
         def fake_stdin():
             return "notathing # flake8: disable=F821\n"
         with mock.patch("pep8.stdin_get_value", fake_stdin):
             guide, report = self.check_files(
                 arglist=['--putty-auto-ignore',
-                         '--putty-ignore=stdin.py : +E261'],
-                filename='stdin.py',
+                         '--putty-ignore=tests/__init__.py : +E261'],
+                filename='tests/__init__.py',
             )
