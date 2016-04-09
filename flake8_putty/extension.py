@@ -2,12 +2,11 @@
 """Flake8 putty extension."""
 from __future__ import absolute_import, unicode_literals
 
-import ast
+import _ast
 import functools
 import platform
 import sys
 import tokenize
-
 
 import pep8
 
@@ -71,7 +70,7 @@ def _get_checker_state(depth=1):
         check_type = Flake8CheckerType.ast
         flake8_checker = frame.f_locals['checker']
         tree = frame.f_locals['tree']
-        assert isinstance(tree, ast.Module)
+        assert isinstance(tree, _ast.Module)
     else:
         tree = None
         flake8_checker = frame.f_locals['check']
