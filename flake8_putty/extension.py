@@ -95,7 +95,7 @@ def get_reporter_state():
 
 
 def _extract_logical_comments(tokens):
-    return '\n'.join(t.string for t in tokens if t.type == tokenize.COMMENT)
+    return '\n'.join(t[1] for t in tokens if t[0] == tokenize.COMMENT)
 
 
 def _deferred_logical_check(line_number,
