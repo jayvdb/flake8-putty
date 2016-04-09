@@ -48,6 +48,9 @@ tests_require = ['pytest']
 if sys.version_info < (3, 3):
     tests_require.append('mock')
 
+# enum34 can not be optional due to an exception
+# https://github.com/msabramo/flake8-exact-pin/pull/1
+
 setup(
     name='flake8-putty',
     version=get_version(),
@@ -60,6 +63,7 @@ setup(
     install_requires=[
         'flake8>=2.2.0',
         'packaging>=16.0',
+        'enum34',
     ],
     license='MIT',
     packages=[str('flake8_putty')],
