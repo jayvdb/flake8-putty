@@ -4,8 +4,10 @@ from __future__ import absolute_import, unicode_literals
 
 import ast
 import functools
+import platform
 import sys
 import tokenize
+
 
 import pep8
 
@@ -15,6 +17,8 @@ try:
     from enum import Enum
 except ImportError:
     from enum34 import Enum
+
+IS_PYPY = platform.python_implementation() == 'PyPy'
 
 
 class Flake8CheckerType(Enum):
@@ -57,6 +61,9 @@ def _get_checker_state(depth=1):
 
     # print('stack 4:', frame.f_locals)
 
+    if IS_PYPY:
+        frame = frame.f_back
+
     pep8_checker = frame.f_locals['self']
     assert isinstance(pep8_checker, pep8.Checker)
 
@@ -95,6 +102,7 @@ def get_reporter_state():
 
 
 def _extract_logical_comments(tokens):
+    # t.string and t.type are not available on all platforms
     return '\n'.join(t[1] for t in tokens if t[0] == tokenize.COMMENT)
 
 
