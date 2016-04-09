@@ -163,8 +163,7 @@ class RegexRule(RuleBase):
     def regex_match_any(self, line, codes=None):
         """Match any regex."""
         for selector in self.regex_selectors:
-            match = selector.regex.search(line)
-            if match:
+            for match in selector.regex.finditer(line):
                 if codes and match.lastindex:
                     # Currently the group name must be 'codes'
                     try:

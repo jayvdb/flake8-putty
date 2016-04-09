@@ -2,7 +2,6 @@
 """Flake8 putty extension."""
 from __future__ import absolute_import, unicode_literals
 
-import _ast
 import functools
 import platform
 import sys
@@ -48,17 +47,16 @@ def ignore_code(options, code):
 def _get_checker_state(depth=1):
     # Stack
     # 1. this function
-    # ... depth
+    # .. <depth>
     # 3. QueueReport.error or pep8.StandardReport.error for flake8 -j 1
+    # .. PyPy has an extra frame here
     # 4. pep8.Checker.check_(ast|physical|logical)
-    # ... check_physical *usually* has extra stack frames,
-    #     but the last physical line is called from check_all.
+    # .. check_physical *usually* has extra stack frames,
+    #    but the last physical line is called from check_all.
     # 5. pep8.Checker.check_all
     check_type = None
 
     frame = sys._getframe(3 + depth)
-
-    # print('stack 4:', frame.f_locals)
 
     if IS_PYPY:
         frame = frame.f_back
@@ -69,17 +67,15 @@ def _get_checker_state(depth=1):
     if 'checker' in frame.f_locals:
         check_type = Flake8CheckerType.ast
         flake8_checker = frame.f_locals['checker']
-        tree = frame.f_locals['tree']
-        assert isinstance(tree, _ast.Module)
+        # frame.f_locals['tree'] is an _ast.Module
     else:
-        tree = None
         flake8_checker = frame.f_locals['check']
         if 'mapping' in frame.f_locals:
             check_type = Flake8CheckerType.logical
         else:
             check_type = Flake8CheckerType.physical
 
-    return pep8_checker, check_type, flake8_checker, tree
+    return pep8_checker, check_type, flake8_checker
 
 
 def get_reporter_state():
@@ -100,29 +96,32 @@ def get_reporter_state():
     return reporter, line_number, offset, text, check
 
 
-def _extract_logical_comments(tokens):
-    # t.string and t.type are not available on all platforms
-    return '\n'.join(t[1] for t in tokens if t[0] == tokenize.COMMENT)
+def _remove_deferred_logical_check(pep8_checker, error_id):
+    # This removes duplicate codes reported for the same line.
+    removed_check_list = [
+        (name, checker, arguments)
+        for name, checker, arguments in pep8_checker._logical_checks
+        if name != error_id
+    ]
+    pep8_checker._logical_checks[:] = removed_check_list
 
 
 def _deferred_logical_check(line_number,
-                            error_line_number,
-                            error_offset,
+                            error_line_number, error_offset,
                             error_code, error_text,
-                            pep8_checker,
-                            error_id):
+                            pep8_checker, error_id):
     """Re-report an error during the logical checks phase."""
     if line_number >= error_line_number:
         yield (
             (error_line_number, error_offset),
             '{0}: {1}'.format(error_code, error_text),
         )
-        removed_check_list = [
-            (name, checker, arguments)
-            for name, checker, arguments in pep8_checker._logical_checks
-            if name != error_id
-        ]
-        pep8_checker._logical_checks[:] = removed_check_list
+        _remove_deferred_logical_check(pep8_checker, error_id)
+
+
+def _extract_logical_comments(tokens):
+    # t.string and t.type are not available on all platforms
+    return '\n'.join(t[1] for t in tokens if t[0] == tokenize.COMMENT)
 
 
 def _get_name(obj):
@@ -137,7 +136,7 @@ def putty_ignore_code(options, code):
     """Hook for pep8 'ignore_code'."""
     def _do_defer():
         name = _get_name(flake8_checker)
-        error_id = 'deferred_{0}_{1}'.format(name, line_number)
+        error_id = 'deferred_{0}_{1}_{2}'.format(name, code, line_number)
         check_entry = (
             error_id,
             functools.partial(
@@ -163,14 +162,13 @@ def putty_ignore_code(options, code):
 
     text = text[5:].strip()
 
-    pep8_checker, check_type, flake8_checker, tree = _get_checker_state()
-
     options.ignore = options._orig_ignore
     options.select = options._orig_select
 
     for rule in options.putty_ignore:
         if (not invalid_line_number and
                 (rule._logical_comments or rule._logical_line)):
+            pep8_checker, check_type, flake8_checker = _get_checker_state()
             if check_type != Flake8CheckerType.logical:
                 _do_defer()
                 # always ignore

@@ -103,8 +103,6 @@ class TestIntegration(TestCase):
                 arglist=['--putty-auto-ignore'],
             )
 
-    # MUSTDO: test global regex ; i.e. two lines with # flake8:...
-
     def test_auto_ignore_line_continuation_logical(self):
         def fake_stdin():
             return "y = 1 , \\\n    2  # flake8: disable=E203\n"
@@ -112,6 +110,19 @@ class TestIntegration(TestCase):
         with mock.patch("pep8.stdin_get_value", fake_stdin):
             guide, report = self.check_files(
                 arglist=['--putty-auto-ignore'],
+            )
+
+    def test_auto_ignore_logical_line_multi(self):
+        def fake_stdin():
+            return (
+                "(notathing and  # flake8: disable=F821\n"
+                "\t1 and  # flake8: disable=E101\n"
+                "    2)\n"
+            )
+        with mock.patch("pep8.stdin_get_value", fake_stdin):
+            guide, report = self.check_files(
+                arglist=['--putty-auto-ignore',
+                         '--putty-ignore=/notathing/ : +E261'],
             )
 
     def test_auto_ignore_multi_regex(self):
