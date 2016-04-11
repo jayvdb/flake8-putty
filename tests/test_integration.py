@@ -2,6 +2,8 @@
 """Test config parser."""
 from __future__ import unicode_literals
 
+import os.path
+
 from unittest import TestCase
 
 try:
@@ -17,6 +19,9 @@ import pep8
 IGNORE_LIST = ('FI', 'D')
 _IGNORE_OPTION = '--ignore={0}'.format(','.join(IGNORE_LIST))
 
+# Use a real filename `tests/__init__.py` to avoid
+# https://github.com/ar4s/flake8_tuple/issues/8
+
 
 class TestIntegration(TestCase):
 
@@ -26,10 +31,19 @@ class TestIntegration(TestCase):
                     count=0):
         """Call check_files and verify error count."""
         arglist = arglist or []
+
+        ignore_used = any(x.startswith('--putty-ignore') for x in arglist)
+        if not ignore_used:
+            arglist.append('--putty-ignore=')
+
+        if '--putty-auto-ignore' not in arglist:
+            arglist.append('--putty-no-auto-ignore')
+
         if explicit_stdin:
             arglist.append('-')
 
         argv = ['flake8', _IGNORE_OPTION] + arglist
+
         with mock.patch("sys.argv", argv):
             style_guide = engine.get_style_guide(parse_argv=True)
             if filename:
@@ -49,6 +63,33 @@ class TestIntegration(TestCase):
             return "notathing\n"
         with mock.patch("pep8.stdin_get_value", fake_stdin):
             guide, report = self.check_files(count=1)
+
+    def test_filename(self):
+        def fake_stdin():
+            return "notathing\n"
+        with mock.patch("pep8.stdin_get_value", fake_stdin):
+            guide, report = self.check_files(
+                filename='tests/__init__.py',
+                count=1,
+            )
+
+    def test_filename_explicit_relative(self):
+        def fake_stdin():
+            return "notathing\n"
+        with mock.patch("pep8.stdin_get_value", fake_stdin):
+            guide, report = self.check_files(
+                filename='./tests/__init__.py',
+                count=1,
+            )
+
+    def test_filename_absolute(self):
+        def fake_stdin():
+            return "notathing\n"
+        with mock.patch("pep8.stdin_get_value", fake_stdin):
+            guide, report = self.check_files(
+                filename=os.path.abspath('tests/__init__.py'),
+                count=1,
+            )
 
     def test_ignore(self):
         def fake_stdin():
@@ -74,6 +115,15 @@ class TestIntegration(TestCase):
                 arglist=['--putty-auto-ignore'],
             )
 
+    def test_auto_ignore_disabled(self):
+        def fake_stdin():
+            return "notathing  # flake8: disable=F821\n"
+        with mock.patch("pep8.stdin_get_value", fake_stdin):
+            guide, report = self.check_files(
+                arglist=['--putty-no-auto-ignore'],
+                count=1,
+            )
+
     def test_auto_ignore_missing_code(self):
         def fake_stdin():
             return "notathing  # flake8: disable=\n"
@@ -92,8 +142,6 @@ class TestIntegration(TestCase):
             )
 
     def test_auto_ignore_multi_filename(self):
-        # Use a real filename `tests/__init__.py` to avoid
-        # https://github.com/ar4s/flake8_tuple/issues/8
         def fake_stdin():
             return "notathing # flake8: disable=F821\n"
         with mock.patch("pep8.stdin_get_value", fake_stdin):

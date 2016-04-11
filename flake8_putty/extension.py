@@ -118,8 +118,15 @@ class PuttyExtension(object):
             help='putty ignore list',
         )
         parser.add_option(
+            '--putty-no-auto-ignore', action='store_false',
+            dest='putty_auto_ignore', default=False,
+            help=(' (default) do not auto ignore lines matching '
+                  '# flake8: disable=<code>,<code>'),
+        )
+        parser.add_option(
             '--putty-auto-ignore', action='store_true',
-            help=('putty auto ignore lines matching '
+            dest='putty_auto_ignore', default=False,
+            help=('auto ignore lines matching '
                   '# flake8: disable=<code>,<code>'),
         )
         parser.config_options.append('putty-select')
@@ -129,7 +136,8 @@ class PuttyExtension(object):
     @classmethod
     def parse_options(cls, options):
         """Parse options and activate `ignore_code` handler."""
-        if not options.putty_select and not options.putty_ignore:
+        if (not options.putty_select and not options.putty_ignore and
+                not options.putty_auto_ignore):
             return
 
         options._orig_select = options.select
