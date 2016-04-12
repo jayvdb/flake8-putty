@@ -27,6 +27,14 @@ class TestIntegration(TestCase):
 
     """Integration style tests to exercise different command line options."""
 
+    @classmethod
+    def setUpClass(cls):
+        flake8_ext_data = engine._register_extensions()
+        flake8_ext_list = flake8_ext_data[0]
+        assert flake8_ext_list
+        flake8_ext_names = [item[0] for item in flake8_ext_list]
+        assert 'flake8-putty' in flake8_ext_names
+
     def check_files(self, arglist=None, explicit_stdin=True, filename=None,
                     count=0):
         """Call check_files and verify error count."""
