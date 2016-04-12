@@ -13,7 +13,7 @@ python:
 
 env:
   matrix:
-    - TOXENV=flakes-v250,flakes-v241,flakes-v230,flakes-v224,flakes-v220
+    - TOXENV=v25x,v241,v230,v224,v210,v200
     - TOXENV=green
     - TOXENV=pytest
 

@@ -58,7 +58,7 @@ setup(
     author_email='jayvdb@gmail.com',
     url='https://github.com/jayvdb/flake8-putty',
     install_requires=[
-        'flake8>=2.2.0',
+        'flake8>=2',  # extensions were introduced in 2.0
         'packaging>=16.0',
     ],
     license='MIT',
