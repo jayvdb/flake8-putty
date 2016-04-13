@@ -14,6 +14,7 @@ from flake8_putty.config import (
     EnvironmentMarkerSelector,
     FileSelector,
     Parser,
+    RegexRule,
     RegexSelector,
     Rule,
     markers,
@@ -184,7 +185,7 @@ class TestParser(TestCase):
         ]
 
         assert p._rules == [
-            Rule([RegexSelector('foo')], 'E101'),
+            RegexRule([RegexSelector('foo')], 'E101'),
         ]
 
     def test_selector_regex_hash(self):
@@ -198,7 +199,7 @@ class TestParser(TestCase):
         ]
 
         assert p._rules == [
-            Rule([RegexSelector('# noqa')], 'E101'),
+            RegexRule([RegexSelector('# noqa')], 'E101'),
         ]
 
     def test_selector_regex_colon(self):
@@ -222,7 +223,7 @@ class TestParser(TestCase):
         ]
 
         assert p._rules == [
-            Rule([RegexSelector('(a, b)')], 'E101'),
+            RegexRule([RegexSelector('(a, b)')], 'E101'),
         ]
 
     def test_selector_regex_multi(self):
@@ -236,7 +237,7 @@ class TestParser(TestCase):
         ]
 
         assert p._rules == [
-            Rule([RegexSelector('(a, b)'), RegexSelector('(c, d)')], 'E101'),
+            RegexRule([RegexSelector('(a, b)'), RegexSelector('(c, d)')], 'E101'),
         ]
 
     def test_selector_regex_codes(self):
@@ -251,7 +252,7 @@ class TestParser(TestCase):
         ]
 
         assert p._rules == [
-            Rule(
+            RegexRule(
                 [RegexSelector('# !qa: *(?P<codes>[A-Z0-9, ]*)')],
                 '(?P<codes>)',
             ),
@@ -269,7 +270,7 @@ class TestParser(TestCase):
         ]
 
         assert p._rules == [
-            Rule(
+            RegexRule(
                 [RegexSelector('# !qa: *(?P<codes>[A-Z0-9, ]*)')],
                 '(?P<codes>)',
             ),
@@ -283,7 +284,7 @@ class TestParser(TestCase):
         ]
 
         assert p._rules == [
-            Rule(
+            RegexRule(
                 [
                     RegexSelector('(a, b)'),
                     CodeSelector('C001'),
@@ -300,7 +301,7 @@ class TestParser(TestCase):
         ]
 
         assert p._rules == [
-            Rule(
+            RegexRule(
                 [FileSelector('foo.py'), RegexSelector('def foo')],
                 'E101',
             ),
@@ -459,7 +460,7 @@ class TestMatchEnvironmentMarker(TestCase):
 
     def test_selector_environment_marker(self):
         p = Parser("python_version == '2.4' : E101")
-        assert not p._rules[0].environment_marker_evaluate()
+        assert not p._rules[0]._selectors[0].evaluate()
 
         p = Parser("python_version > '2.4' : E101")
-        assert p._rules[0].environment_marker_evaluate()
+        assert p._rules[0]._selectors[0].evaluate()
