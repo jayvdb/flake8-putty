@@ -15,6 +15,8 @@ from flake8 import engine
 
 import pep8
 
+from flake8_putty.config import IS_WINDOWS
+
 # Ignore unrelated flake8 plugins
 IGNORE_LIST = ('FI', 'D')
 _IGNORE_OPTION = '--ignore={0}'.format(','.join(IGNORE_LIST))
@@ -23,9 +25,9 @@ _IGNORE_OPTION = '--ignore={0}'.format(','.join(IGNORE_LIST))
 # https://github.com/ar4s/flake8_tuple/issues/8
 
 
-class TestIntegration(TestCase):
+class IntegrationTestBase(TestCase):
 
-    """Integration style tests to exercise different command line options."""
+    """Integration test framework."""
 
     @classmethod
     def setUpClass(cls):
@@ -66,6 +68,11 @@ class TestIntegration(TestCase):
         self.assertEqual(total_errors, count)
         return style_guide, total_errors
 
+
+class TestFlake8(IntegrationTestBase):
+
+    """Integration tests for flake8 itself."""
+
     def test_stdin(self):
         def fake_stdin():
             return "notathing\n"
@@ -99,7 +106,56 @@ class TestIntegration(TestCase):
                 count=1,
             )
 
-    def test_ignore(self):
+
+class TestIgnoreFile(IntegrationTestBase):
+
+    """Integration tests for ignoring with filenames."""
+
+    def test_ignore_filename(self):
+        def fake_stdin():
+            return "notathing\n"
+        with mock.patch("pep8.stdin_get_value", fake_stdin):
+            guide, report = self.check_files(
+                arglist=['--putty-ignore=tests/__init__.py : +F821'],
+                filename='tests/__init__.py',
+            )
+
+    def test_ignore_filename_explicit_relative(self):
+        # FIXME(#9): explicit relative should match in both below, i.e count=0,
+        # on all platforms.
+        def fake_stdin():
+            return "notathing\n"
+        with mock.patch("pep8.stdin_get_value", fake_stdin):
+            guide, report = self.check_files(
+                arglist=['--putty-ignore=./tests/__init__.py : +F821'],
+                filename='tests/__init__.py',
+                count=1,
+            )
+
+        with mock.patch("pep8.stdin_get_value", fake_stdin):
+            guide, report = self.check_files(
+                arglist=['--putty-ignore=./tests/__init__.py : +F821'],
+                filename='./tests/__init__.py',
+                count=0 if IS_WINDOWS else 1,
+            )
+
+    def test_ignore_filename_absolute_not_matched(self):
+        """Verify absolute filenames are not ignorable."""
+        def fake_stdin():
+            return "notathing\n"
+        with mock.patch("pep8.stdin_get_value", fake_stdin):
+            guide, report = self.check_files(
+                arglist=['--putty-ignore=tests/__init__.py : +F821'],
+                filename=os.path.abspath('tests/__init__.py'),
+                count=1,
+            )
+
+
+class TestIgnoreRegex(IntegrationTestBase):
+
+    """Integration tests for ignoring with regex."""
+
+    def test_ignore_regex(self):
         def fake_stdin():
             return "notathing\n"
         with mock.patch("pep8.stdin_get_value", fake_stdin):

@@ -84,6 +84,20 @@ class TestParser(TestCase):
             Rule([FileSelector('foo.py')], 'E101'),
         ]
 
+    def test_selector_dir(self):
+        p = Parser('tests/ : E101')
+        assert list(p._lines()) == [
+            (1, 'tests/ : E101'),
+        ]
+
+        assert list(p._parsed_lines()) == [
+            (1, ['tests/'], 'E101'),
+        ]
+
+        assert p._rules == [
+            Rule([FileSelector('tests/')], 'E101'),
+        ]
+
     def test_selector_filename_multi(self):
         p = Parser('foo.py, bar.py : E101')
         assert list(p._lines()) == [
@@ -96,6 +110,65 @@ class TestParser(TestCase):
 
         assert p._rules == [
             Rule([FileSelector('foo.py'), FileSelector('bar.py')], 'E101'),
+        ]
+
+    def test_selector_filename_explicit_relative(self):
+        p = Parser('./foo.py : E101')
+        assert list(p._lines()) == [
+            (1, './foo.py : E101'),
+        ]
+
+        assert list(p._parsed_lines()) == [
+            (1, ['./foo.py'], 'E101'),
+        ]
+
+        assert p._rules == [
+            Rule([FileSelector('./foo.py')], 'E101'),
+        ]
+
+    def test_selector_explicit_relative_dir(self):
+        p = Parser('./ : E101')
+        assert list(p._lines()) == [
+            (1, './ : E101'),
+        ]
+
+        assert list(p._parsed_lines()) == [
+            (1, ['./'], 'E101'),
+        ]
+
+        assert p._rules == [
+            Rule([FileSelector('./')], 'E101'),
+        ]
+
+    def test_selector_explicit_relative_star(self):
+        p = Parser('./* : E101')
+        assert list(p._lines()) == [
+            (1, './* : E101'),
+        ]
+
+        assert list(p._parsed_lines()) == [
+            (1, ['./*'], 'E101'),
+        ]
+
+        # TODO(#9): This should be a FileSelector, not a CodeSelector
+        assert p._rules == [
+            Rule([CodeSelector('./*')], 'E101'),
+        ]
+
+    def test_selector_star(self):
+        p = Parser('* : E101')
+        assert list(p._lines()) == [
+            (1, '* : E101'),
+        ]
+
+        assert list(p._parsed_lines()) == [
+            (1, ['*'], 'E101'),
+        ]
+
+        # TODO(#9): This is a CodeSelector, which isnt suitable,
+        # but a good purpose for this has not been established.
+        assert p._rules == [
+            Rule([CodeSelector('*')], 'E101'),
         ]
 
     def test_selector_regex(self):
