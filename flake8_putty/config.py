@@ -12,6 +12,11 @@ try:
 except ImportError:
     markers = None
 
+try:
+    import globre
+except ImportError:
+    globre = None
+
 IS_WINDOWS = (sys.platform == 'win32')
 
 SELECTOR_SPLITTER = re.compile(r' *(/.*?(?<!\\)/|[^/][^,]*) *,?')
@@ -39,6 +44,19 @@ class Selector(object):
 
     _text = None
 
+    _starts_with = None
+    _ends_with = None
+
+    @classmethod
+    def _use_cls(cls, text):
+        if cls._ends_with and not text.endswith(cls._ends_with):
+            return False
+        
+        if cls._starts_with and not text.startswith(cls._starts_with):
+            return False
+
+        return True
+
     def __init__(self, text=None):
         """Constructor."""
         if text is not None:
@@ -60,8 +78,12 @@ class RegexSelector(Selector):
 
     """Regex selector."""
 
+    _starts_with = _ends_with = '/'
+
     def __init__(self, text=None):
         """Constructor."""
+        if text and text[0] == '/':
+            text = text[1:-1]
         self._compiled_regex = None
         super(RegexSelector, self).__init__(text)
 
@@ -76,6 +98,8 @@ class RegexSelector(Selector):
 class FileSelector(Selector):
 
     """File selector."""
+
+    _ends_with = ('/', '.py')
 
     @property
     def pattern(self):
@@ -97,6 +121,8 @@ class EnvironmentMarkerSelector(Selector):
 
     """Existing code selector."""
 
+    _starts_with = ENVIRONMENT_MARKER_PREFIXES
+
     def __init__(self, text):
         """Constructor."""
         self._marker = None
@@ -115,6 +141,14 @@ class EnvironmentMarkerSelector(Selector):
         return self.marker.evaluate(environment)
 
 
+SELECTOR_CLASSES = [
+    CodeSelector,
+    EnvironmentMarkerSelector,
+    FileSelector,
+    RegexSelector,
+]
+
+
 class RuleBase(object):
 
     """Rule to be used for matching."""
@@ -124,11 +158,32 @@ class RuleBase(object):
     def __init__(self, selectors, codes):
         """Constructor."""
         self._selectors = selectors
-        self.codes = codes
+
+        codes = codes.strip()
+        if codes.startswith('+'):
+            self._append_codes = True
+            codes = codes[1:]
+        else:
+            self._append_codes = False
+
+        self.codes = _stripped_codes(codes)
 
     def match(self, filename, line, codes):
         """Match rule."""
         # abstract method
+
+    @property
+    def all_selectors(self):
+        """Iterable of all selectors."""
+        return self._selectors
+
+    def __eq__(self, other):
+        """True if other is instance of Rule with same codes and selectors."""
+        if isinstance(other, self.__class__):
+            return ((self._selectors, self.codes) ==
+                    (other.all_selectors, other.codes))
+
+        return False
 
     def __repr__(self):
         return '<Rule %r : %r>' % (self._selectors, self.codes)
@@ -155,11 +210,9 @@ class RegexRule(RuleBase):
             selector for selector in selectors
             if isinstance(selector, RegexSelector)]
 
-        self._vary_codes = '(?P<codes>)' in codes
-        if self._vary_codes:
-            assert len(codes) == 1
-
         super(RegexRule, self).__init__(selectors, codes)
+
+        self._vary_codes = self.codes == ('(?P<codes>)', )
 
     def regex_match_any(self, line, codes=None):
         """Match any regex."""
@@ -185,56 +238,26 @@ class RegexRule(RuleBase):
 
     def match(self, filename, line, codes):
         """Match rule and set attribute codes."""
-        if self.regex_match_any(line, codes):
-            if self._vary_codes:
-                self.codes = tuple([codes[-1]])
-            return True
+        if self.regex_selectors:
+            if self.regex_match_any(line, codes):
+                if self._vary_codes:
+                    self.codes = tuple([codes[-1]])
+                return True
+
+        return super(RegexRule, self).match(filename, line, codes)
 
 
-class Rule(RegexRule):
+class FileRule(RuleBase):
 
-    """Rule containing selectors and codes to be used."""
+    """Rule that uses match against files."""
 
     def __init__(self, selectors, codes):
         """Constructor."""
         self.file_selectors = [
             selector for selector in selectors
             if isinstance(selector, FileSelector)]
-        self.code_selectors = [
-            selector for selector in selectors
-            if isinstance(selector, CodeSelector)]
 
-        environment_marker_selectors = [
-            selector for selector in selectors
-            if isinstance(selector, EnvironmentMarkerSelector)]
-        assert len(environment_marker_selectors) < 2
-        if environment_marker_selectors:
-            self.environment_marker_selector = environment_marker_selectors[0]
-        else:
-            self.environment_marker_selector = None
-
-        codes = codes.strip()
-        if codes.startswith('+'):
-            self._append_codes = True
-            codes = codes[1:]
-        else:
-            self._append_codes = False
-
-        codes = _stripped_codes(codes)
-        super(Rule, self).__init__(selectors, codes)
-
-    @property
-    def all_selectors(self):
-        """Iterable of all selectors."""
-        return self._selectors
-
-    def __eq__(self, other):
-        """True if other is instance of Rule with same codes and selectors."""
-        if isinstance(other, self.__class__):
-            return ((self._selectors, self.codes) ==
-                    (other.all_selectors, other.codes))
-
-        return False
+        super(FileRule, self).__init__(selectors, codes)
 
     def file_match_any(self, filename):
         """Match any filename."""
@@ -251,12 +274,55 @@ class Rule(RegexRule):
                 return True
         return False
 
+    def match(self, filename, line, codes):
+        """Match rule and set attribute codes."""
+        if self.file_selectors:
+            if self.file_match_any(filename):
+                return True
+
+        return super(FileRule, self).match(filename, line, codes)
+
+
+class CodeRule(RuleBase):
+
+    def __init__(self, selectors, codes):
+        """Constructor."""
+        self.code_selectors = [
+            selector for selector in selectors
+            if isinstance(selector, CodeSelector)]
+
+        super(CodeRule, self).__init__(selectors, codes)
+
     def codes_match_any(self, codes):
         """Match any code."""
         for selector in self.code_selectors:
             if selector.code in codes:
                 return True
         return False
+
+    def match(self, filename, line, codes):
+        """Match rule and set attribute codes."""
+        if self.code_selectors:
+            if self.codes_match_any(codes):
+                return True
+
+        return super(CodeRule, self).match(filename, line, codes)
+
+
+class EnvironmentMarkerRule(RuleBase):
+
+    def __init__(self, selectors, codes):
+        """Constructor."""
+        environment_marker_selectors = [
+            selector for selector in selectors
+            if isinstance(selector, EnvironmentMarkerSelector)]
+        assert len(environment_marker_selectors) < 2
+        if environment_marker_selectors:
+            self.environment_marker_selector = environment_marker_selectors[0]
+        else:
+            self.environment_marker_selector = None
+
+        super(EnvironmentMarkerRule, self).__init__(selectors, codes)
 
     def environment_marker_evaluate(self):
         """Evaluate the environment marker."""
@@ -266,17 +332,18 @@ class Rule(RegexRule):
         return False
 
     def match(self, filename, line, codes):
-        """Match rule."""
-        if ((not self.file_selectors or self.file_match_any(filename)) and
-                (not self.environment_marker_selector or
-                 self.environment_marker_evaluate()) and
-                (not self.code_selectors or self.codes_match_any(codes))):
-            if self.regex_selectors:
-                return super(Rule, self).match(filename, line, codes)
-            else:
+        """Match rule and set attribute codes."""
+        if self.environment_marker_selector:
+            if self.environment_marker_evaluate():
                 return True
 
-        return False
+        return super(EnvironmentMarkerRule, self).match(filename, line, codes)
+
+
+class Rule(FileRule, RegexRule, CodeRule, EnvironmentMarkerRule):
+
+    """Rule containing selectors and codes to be used."""
+
 
 
 class Parser(object):
@@ -319,20 +386,23 @@ class Parser(object):
         if self.__rules is not None:
             return self.__rules
 
+        selector_classes = list(reversed(SELECTOR_CLASSES))
+
         self.__rules = []
         lines = self._parsed_lines()
         for i, _selectors, codes in lines:
             selectors = []
             for _selector in _selectors:
-                if _selector.startswith('/') and _selector.endswith('/'):
-                    selector = RegexSelector(_selector[1:-1])
-                elif _selector.endswith('.py') or _selector.endswith('/'):
-                    selector = FileSelector(_selector)
-                elif any(_selector.startswith(x)
-                         for x in ENVIRONMENT_MARKER_PREFIXES):
-                    selector = EnvironmentMarkerSelector(_selector)
+                for cls in selector_classes:
+                    if cls._use_cls(_selector):
+                        break
                 else:
-                    selector = CodeSelector(_selector)
+                    # TODO: warning
+                    continue
+
+                print('found', cls)
+
+                selector = cls(_selector)
 
                 selectors.append(selector)
 

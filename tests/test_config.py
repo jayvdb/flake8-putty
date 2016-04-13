@@ -49,9 +49,11 @@ class TestParser(TestCase):
             (1, ['E100', 'E200'], 'E101'),
         ]
 
-        assert p._rules == [
-            Rule([CodeSelector('E100'), CodeSelector('E200')], 'E101'),
-        ]
+        selectors = []
+        selectors.append(CodeSelector('E100'))
+        selectors.append(CodeSelector('E200'))
+        rule = Rule(selectors, 'E101')
+        assert p._rules == [rule]
 
     def test_selector_marker(self):
         p = Parser("python_version == '2.4' : E101")
