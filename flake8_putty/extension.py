@@ -87,7 +87,7 @@ class AutoLineDisableRule(RegexRule):
         """Constructor."""
         super(AutoLineDisableRule, self).__init__(
             [AutoLineDisableSelector()],
-            ['(?P<codes>)'],
+            '+(?P<codes>)',
         )
         self._append_codes = True
 
