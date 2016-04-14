@@ -106,7 +106,6 @@ class EnvironmentMarkerSelector(Selector):
     def marker(self):
         """Return environment marker."""
         if not self._marker:
-            assert markers, 'Package packaging is needed for environment markers'
             self._marker = markers.Marker(self.raw)
         return self._marker
 

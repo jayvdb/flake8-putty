@@ -4,10 +4,7 @@ from __future__ import unicode_literals
 
 import os
 
-try:
-    from unittest2 import TestCase, SkipTest
-except ImportError:
-    from unittest import TestCase, SkipTest
+from unittest import TestCase
 
 from flake8_putty.config import (
     CodeSelector,
@@ -16,7 +13,6 @@ from flake8_putty.config import (
     Parser,
     RegexSelector,
     Rule,
-    markers,
 )
 from flake8_putty.extension import AutoLineDisableRule
 
@@ -330,9 +326,9 @@ class TestParser(TestCase):
         ]
 
 
-class TestMatchFilename(TestCase):
+class TestMatch(TestCase):
 
-    """Test matching filenames."""
+    """Test config option rule parser."""
 
     def test_selector_filename(self):
         p = Parser('foo.py : E101')
@@ -352,6 +348,13 @@ class TestMatchFilename(TestCase):
         assert p._rules[0].file_match_any('.{0}foo.py'.format(os.sep))
         assert p._rules[0].file_match_any('bar.py')
         assert not p._rules[0].file_match_any('foo/bar.py')
+
+    def test_selector_environment_marker(self):
+        p = Parser("python_version == '2.4' : E101")
+        assert not p._rules[0].environment_marker_evaluate()
+
+        p = Parser("python_version > '2.4' : E101")
+        assert p._rules[0].environment_marker_evaluate()
 
     def test_selector_directory(self):
         p = Parser('tests/ : E101')
@@ -383,11 +386,6 @@ class TestMatchFilename(TestCase):
         assert p._rules[0].file_match_any('tests/foo/test_bar.py')
         assert p._rules[0].file_match_any('vendor/foo/test_bar.py')
         assert not p._rules[0].file_match_any('other/foo/test_bar.py')
-
-
-class TestMatchRegex(TestCase):
-
-    """Test matching source lines."""
 
     def test_selector_regex(self):
         p = Parser('/foo/ : E101')
@@ -444,20 +442,3 @@ class TestMatchRegex(TestCase):
     def test_combined_selectors(self):
         p = Parser('test.py, /foo/ : E101')
         assert p._rules[0].match('test.py', 'def foo', ['n/a'])
-
-
-class TestMatchEnvironmentMarker(TestCase):
-
-    """Test matching environment markers."""
-
-    @classmethod
-    def setUpClass(cls):
-        if not markers:
-            raise SkipTest('Package packaging not found')
-
-    def test_selector_environment_marker(self):
-        p = Parser("python_version == '2.4' : E101")
-        assert not p._rules[0].environment_marker_evaluate()
-
-        p = Parser("python_version > '2.4' : E101")
-        assert p._rules[0].environment_marker_evaluate()

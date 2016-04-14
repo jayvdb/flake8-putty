@@ -44,16 +44,9 @@ def get_long_description():
     return '\n\n'.join(descr)
 
 
-extras = {
-    'markers': ['packaging>=16.0'],
-}
-
-
 tests_require = ['pytest']
 if sys.version_info < (3, 3):
     tests_require.append('mock')
-if sys.version_info < (2, 7):
-    tests_require.append('unittest2')
 
 setup(
     name='flake8-putty',
@@ -66,8 +59,8 @@ setup(
     url='https://github.com/jayvdb/flake8-putty',
     install_requires=[
         'flake8>=2',  # extensions were introduced in 2.0
+        'packaging>=16.0',
     ],
-    extras_require=extras,
     license='MIT',
     packages=[str('flake8_putty')],
     zip_safe=False,
