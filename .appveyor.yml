@@ -16,9 +16,11 @@ build: off
 install:
   - pip install tox wheel
 
+# Tox runs v2.2.0 with --jobs 32, which fails on Windows with
+# AttributeError: 'FlakesChecker' object has no attribute 'withDoctest'
 test_script:
   - tox -e pytest
-  - tox -e flakes-v250,flakes-v241,flakes-v230,flakes-v224,flakes-v220
+  - tox -e v250,v240,v230,v224,v210,v200
 
 deploy_script:
   - python setup.py sdist bdist_wheel
