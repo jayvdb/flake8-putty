@@ -410,6 +410,28 @@ class TestMatchRegex(TestCase):
         assert p._rules[0].regex_match_any(' foo bar # !qa: E101', ['E101'])
         assert not p._rules[0].regex_match_any(' baz # !qa: E101', ['E102'])
 
+    def test_selector_regex_codes_multi(self):
+        p = Parser('/# !qa: *(?P<codes>[A-Z0-9, ]*)/ : +(?P<codes>)')
+        assert p._rules[0].regex_match_any(
+            ' foo bar # !qa: E101, E102',
+            ['E101'],
+        )
+        assert p._rules[0].regex_match_any(
+            ' foo bar # !qa: E101, E102',
+            ['E102'],
+        )
+
+    def test_selector_regex_codes_multi_match(self):
+        p = Parser('/disable=(?P<codes>[A-Z0-9]*)/ : +(?P<codes>)')
+        assert p._rules[0].regex_match_any(
+            ' foo bar # disable=E101 disable=E102',
+            ['E101'],
+        )
+        assert p._rules[0].regex_match_any(
+            ' foo bar # disable=E101 disable=E102',
+            ['E102'],
+        )
+
     def test_selector_auto(self):
         rule = AutoLineDisableRule()
         assert rule.regex_match_any('foo # flake8: disable=E101', ['E101'])
