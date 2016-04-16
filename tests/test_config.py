@@ -446,3 +446,5 @@ class TestMatch(TestCase):
     def test_combined_selectors(self):
         p = Parser('test.py, /foo/ : E101')
         assert p._rules[0].match('test.py', 'def foo', ['n/a'])
+        assert not p._rules[0].match('test.py', 'def bah', ['n/a'])
+        assert not p._rules[0].match('foo.py', 'def foo', ['n/a'])

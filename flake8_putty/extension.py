@@ -95,6 +95,16 @@ class AutoLineDisableRule(RegexRule):
         return 'AutoLineDisableRule()'
 
 
+def _reorder_options_hooks():
+    frame = sys._getframe(2)
+    options_hooks = frame.f_locals['options_hooks']
+    options_hooks[:] = (
+        [PuttyExtension.parse_options] +
+        [x for x in options_hooks
+         if x != PuttyExtension.parse_options]
+    )
+
+
 class PuttyExtension(object):
 
     """Flake8 extension for customising error reporting."""
@@ -132,6 +142,8 @@ class PuttyExtension(object):
         parser.config_options.append('putty-select')
         parser.config_options.append('putty-ignore')
         parser.config_options.append('putty-auto-ignore')
+
+        _reorder_options_hooks()
 
     @classmethod
     def parse_options(cls, options):
