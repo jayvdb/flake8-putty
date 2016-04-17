@@ -437,6 +437,13 @@ class TestMatchRegex(TestCase):
         assert rule.regex_match_any('foo # flake8: disable=E101', ['E101'])
         assert not rule.regex_match_any('foo # flake8: disable=E101', ['E102'])
 
+    def test_selector_auto_string(self):
+        rule = AutoLineDisableRule()
+        assert not rule.regex_match_any('"# flake8: disable=E101"', ['E101'])
+        assert rule.regex_match_any('"\"" # flake8: disable=E101', ['E101'])
+        # It should not be possible to disable rules with invalid syntax
+        assert not rule.regex_match_any('"#" flake8: disable=E101', ['E101'])
+
     def test_selector_auto_missing_code(self):
         rule = AutoLineDisableRule()
         assert not rule.regex_match_any('foo # flake8: disable=', ['E101'])

@@ -73,7 +73,7 @@ class AutoLineDisableSelector(RegexSelector):
 
     """Auto-selector."""
 
-    _text = '#.*flake8: disable=(?P<codes>[A-Z0-9, ]*)'
+    _text = '#[^\'"]*flake8: disable=(?P<codes>[A-Z0-9, ]*)[^\'"]*$'
 
     def __repr__(self):
         return 'AutoLineDisableSelector()'
