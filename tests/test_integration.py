@@ -151,6 +151,48 @@ class TestIgnoreFile(IntegrationTestBase):
             )
 
 
+class TestIgnoreTrailingNewLine(IntegrationTestBase):
+
+    """Integration tests for matching against trailing \n in line."""
+
+    # The physical line sent to match routines includes a trailing '\n'
+    # which should not cause a second input line for the regex.
+
+    # FIXME(very low importance): test_new_line_regex shows that \n is matched
+    # as it hides the error.
+    # As this appears to be the only weakness in the current code, it
+    # is easier to reject this regex.
+    # Note that multi-line regex mode is not supported for physical lines,
+    # bit it doesnt appear to expose any additional bugs.
+
+    def test_blank_line_regex(self):
+        def fake_stdin():
+            return "notathing\n"
+        with mock.patch("pep8.stdin_get_value", fake_stdin):
+            guide, report = self.check_files(
+                arglist=['--putty-ignore=/^$/ : +F821'],
+                count=1,
+            )
+
+    def test_new_line_regex(self):
+        def fake_stdin():
+            return "notathing\n"
+        with mock.patch("pep8.stdin_get_value", fake_stdin):
+            guide, report = self.check_files(
+                arglist=['--putty-ignore=/\\n/ : +F821'],
+                count=0,
+            )
+
+    def test_multiline_new_line_regex(self):
+        def fake_stdin():
+            return "notathing\n"
+        with mock.patch("pep8.stdin_get_value", fake_stdin):
+            guide, report = self.check_files(
+                arglist=['--putty-ignore=/(?m)^notathing$/ : +F821'],
+                count=0,
+            )
+
+
 class TestIgnoreRegex(IntegrationTestBase):
 
     """Integration tests for ignoring with regex."""
