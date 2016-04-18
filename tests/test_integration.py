@@ -153,7 +153,7 @@ class TestIgnoreFile(IntegrationTestBase):
 
 class TestIgnoreTrailingNewLine(IntegrationTestBase):
 
-    """Integration tests for matching against trailing \n in line."""
+    r"""Integration tests for matching against trailing \n in line."""
 
     # The physical line sent to match routines includes a trailing '\n'
     # which should not cause a second input line for the regex.
