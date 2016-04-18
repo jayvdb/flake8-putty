@@ -120,6 +120,8 @@ class RuleBase(object):
     """Rule to be used for matching."""
 
     _append_codes = None
+    _logical_comments = False
+    _logical_line = False
 
     def __init__(self, selectors, codes):
         """Constructor."""

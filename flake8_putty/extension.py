@@ -3,9 +3,29 @@
 from __future__ import absolute_import, unicode_literals
 
 import functools
+import platform
 import sys
+import tokenize
+
+import pep8
 
 from flake8_putty.config import Parser, RegexRule, RegexSelector
+
+try:
+    from enum import Enum
+except ImportError:
+    from enum34 import Enum
+
+IS_PYPY = platform.python_implementation() == 'PyPy'
+
+
+class Flake8CheckerType(Enum):
+
+    """Flake8 checker types."""
+
+    ast = 1
+    physical = 2
+    logical = 3
 
 
 # Copied from pep.StyleGuide.ignore_code
@@ -24,16 +44,51 @@ def ignore_code(options, code):
             not code.startswith(options.select))
 
 
+def _get_checker_state(depth=1):
+    # Stack
+    # 1. this function
+    # .. <depth>
+    # 3. QueueReport.error or pep8.StandardReport.error for flake8 -j 1
+    # .. PyPy has an extra frame here
+    # 4. pep8.Checker.check_(ast|physical|logical)
+    # .. check_physical *usually* has extra stack frames,
+    #    but the last physical line is called from check_all.
+    # 5. pep8.Checker.check_all
+    check_type = None
+
+    frame = sys._getframe(3 + depth)
+
+    if IS_PYPY:
+        frame = frame.f_back
+
+    pep8_checker = frame.f_locals['self']
+    assert isinstance(pep8_checker, pep8.Checker)
+
+    if 'checker' in frame.f_locals:
+        check_type = Flake8CheckerType.ast
+        flake8_checker = frame.f_locals['checker']
+        # frame.f_locals['tree'] is an _ast.Module
+    else:
+        flake8_checker = frame.f_locals['check']
+        if 'mapping' in frame.f_locals:
+            check_type = Flake8CheckerType.logical
+        else:
+            check_type = Flake8CheckerType.physical
+
+    return pep8_checker, check_type, flake8_checker
+
+
 def get_reporter_state():
     """Get pep8 reporter state from stack."""
     # Stack
     # 1. get_reporter_state (i.e. this function)
     # 2. putty_ignore_code
     # 3. QueueReport.error or pep8.StandardReport.error for flake8 -j 1
-    # 4. pep8.Checker.check_ast or check_physical or check_logical
-    #    locals contains `tree` (ast) for check_ast
     frame = sys._getframe(3)
+
     reporter = frame.f_locals['self']
+    assert isinstance(reporter, pep8.BaseReport)
+
     line_number = frame.f_locals['line_number']
     offset = frame.f_locals['offset']
     text = frame.f_locals['text']
@@ -41,19 +96,91 @@ def get_reporter_state():
     return reporter, line_number, offset, text, check
 
 
+def _remove_deferred_logical_check(pep8_checker, error_id):
+    # This removes duplicate codes reported for the same line.
+    removed_check_list = [
+        (name, checker, arguments)
+        for name, checker, arguments in pep8_checker._logical_checks
+        if name != error_id
+    ]
+    pep8_checker._logical_checks[:] = removed_check_list
+
+
+def _deferred_logical_check(line_number,
+                            error_line_number, error_offset,
+                            error_code, error_text,
+                            pep8_checker, error_id):
+    """Re-report an error during the logical checks phase."""
+    if line_number >= error_line_number:
+        yield (
+            (error_line_number, error_offset),
+            '{0}: {1}'.format(error_code, error_text),
+        )
+        _remove_deferred_logical_check(pep8_checker, error_id)
+
+
+def _extract_logical_comments(tokens):
+    # t.string and t.type are not available on all platforms
+    return '\n'.join(t[1] for t in tokens if t[0] == tokenize.COMMENT)
+
+
+def _get_name(obj):
+    try:
+        name = obj.__class__.__name__
+    except AttributeError:
+        name = obj.__name__
+    return name
+
+
 def putty_ignore_code(options, code):
     """Hook for pep8 'ignore_code'."""
+    def _do_defer():
+        name = _get_name(flake8_checker)
+        error_id = 'deferred_{0}_{1}_{2}'.format(name, code, line_number)
+        check_entry = (
+            error_id,
+            functools.partial(
+                _deferred_logical_check,
+                error_line_number=line_number,
+                error_offset=offset,
+                error_code=code,
+                error_text=text,
+                pep8_checker=pep8_checker,
+                error_id=error_id,
+            ),
+            ['line_number'],
+        )
+
+        pep8_checker._logical_checks.append(check_entry)
+
     reporter, line_number, offset, text, check = get_reporter_state()
+    invalid_line_number = line_number > len(reporter.lines)
     try:
         line = reporter.lines[line_number - 1]
     except IndexError:
         line = ''
 
+    text = text[5:].strip()
+
     options.ignore = options._orig_ignore
     options.select = options._orig_select
 
     for rule in options.putty_ignore:
-        if rule.match(reporter.filename, line, list(reporter.counters) + [code]):
+        if (not invalid_line_number and
+                (rule._logical_comments or rule._logical_line)):
+            pep8_checker, check_type, flake8_checker = _get_checker_state()
+            if check_type != Flake8CheckerType.logical:
+                _do_defer()
+                # always ignore
+                return True
+            elif rule._logical_comments:
+                rule_line = _extract_logical_comments(pep8_checker.tokens)
+            elif rule._logical_line:
+                rule_line = pep8_checker.logical_line
+        else:
+            rule_line = line
+
+        if rule.match(reporter.filename, rule_line, list(reporter.counters) + [code]):
             if rule._append_codes:
                 options.ignore = options.ignore + rule.codes
             else:
@@ -83,13 +210,15 @@ class AutoLineDisableRule(RegexRule):
 
     """Rule matching # flake8: disable=x,y ."""
 
+    _append_codes = True
+    _logical_comments = True
+
     def __init__(self):
         """Constructor."""
         super(AutoLineDisableRule, self).__init__(
             [AutoLineDisableSelector()],
             ['(?P<codes>)'],
         )
-        self._append_codes = True
 
     def __repr__(self):
         return 'AutoLineDisableRule()'

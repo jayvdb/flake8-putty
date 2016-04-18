@@ -55,6 +55,9 @@ if sys.version_info < (3, 3):
 if sys.version_info < (2, 7):
     tests_require.append('unittest2')
 
+# enum34 can not be optional due to an exception
+# https://github.com/msabramo/flake8-exact-pin/pull/1
+
 setup(
     name='flake8-putty',
     version=get_version(),
@@ -66,6 +69,7 @@ setup(
     url='https://github.com/jayvdb/flake8-putty',
     install_requires=[
         'flake8>=2',  # extensions were introduced in 2.0
+        'enum34',
     ],
     extras_require=extras,
     license='MIT',
