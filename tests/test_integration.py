@@ -151,6 +151,70 @@ class TestIgnoreFile(IntegrationTestBase):
             )
 
 
+class TestIgnoreTrailingNewLine(IntegrationTestBase):
+
+    r"""Integration tests for matching against trailing \n in line."""
+
+    # The physical line sent to match routines includes a trailing '\n'
+    # which should not cause a second input line for the regex.
+    # test_line_end_regex and test_blank_line_regex confirms that
+    # the most likely problems do not exist.
+
+    # FIXME(very low importance): The tests test_new_line_regex and
+    # test_multiline_blank_line_regex shows that the \n is causing matches
+    # inappropriately, as it hides the error.
+    # As these are the only strange results with the current physical line,
+    # it is easier to reject these regex rather than change the match process.
+    # Note that multi-line regex mode is not supported for physical lines,
+    # but it doesnt appear to expose any additional real world bugs.
+
+    def test_line_end_regex(self):
+        def fake_stdin():
+            return "notathing\n"
+        with mock.patch("pep8.stdin_get_value", fake_stdin):
+            guide, report = self.check_files(
+                arglist=['--putty-ignore=/notathing$/ : +F821'],
+                count=0,
+            )
+
+    def test_blank_line_regex(self):
+        def fake_stdin():
+            return "notathing\n"
+        with mock.patch("pep8.stdin_get_value", fake_stdin):
+            guide, report = self.check_files(
+                arglist=['--putty-ignore=/^$/ : +F821'],
+                count=1,
+            )
+
+    def test_new_line_regex(self):
+        def fake_stdin():
+            return "notathing\n"
+        with mock.patch("pep8.stdin_get_value", fake_stdin):
+            guide, report = self.check_files(
+                arglist=['--putty-ignore=/\\n/ : +F821'],
+                count=0,
+            )
+
+    def test_multiline_blank_line_regex(self):
+        def fake_stdin():
+            return "notathing\n"
+        with mock.patch("pep8.stdin_get_value", fake_stdin):
+            guide, report = self.check_files(
+                arglist=['--putty-ignore=/(?m)^$/ : +F821'],
+                count=0,
+            )
+
+    def test_multiline_line_end_regex(self):
+        # End of line is still matched correctly.
+        def fake_stdin():
+            return "notathing\n"
+        with mock.patch("pep8.stdin_get_value", fake_stdin):
+            guide, report = self.check_files(
+                arglist=['--putty-ignore=/(?m)^notathing$/ : +F821'],
+                count=0,
+            )
+
+
 class TestIgnoreRegex(IntegrationTestBase):
 
     """Integration tests for ignoring with regex."""
