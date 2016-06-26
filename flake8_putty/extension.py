@@ -129,9 +129,10 @@ class PuttyExtension(object):
             help=('auto ignore lines matching '
                   '# flake8: disable=<code>,<code>'),
         )
-        parser.config_options.append('putty-select')
-        parser.config_options.append('putty-ignore')
-        parser.config_options.append('putty-auto-ignore')
+        if hasattr(parser, 'config_options'):
+            parser.config_options.append('putty-select')
+            parser.config_options.append('putty-ignore')
+            parser.config_options.append('putty-auto-ignore')
 
     @classmethod
     def parse_options(cls, options):
