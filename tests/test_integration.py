@@ -265,8 +265,10 @@ class TestIgnoreRegex(IntegrationTestBase):
             return "notathing # flake8: disable=F821\n"
         with mock.patch("pep8.stdin_get_value", fake_stdin):
             guide, report = self.check_files(
-                arglist=['--putty-auto-ignore',
-                         '--putty-ignore=/notathing/ : +E261'],
+                arglist=[
+                    '--putty-auto-ignore',
+                    '--putty-ignore=/notathing/ : +E261',
+                ],
             )
 
     def test_auto_ignore_multi_filename(self):
@@ -274,7 +276,9 @@ class TestIgnoreRegex(IntegrationTestBase):
             return "notathing # flake8: disable=F821\n"
         with mock.patch("pep8.stdin_get_value", fake_stdin):
             guide, report = self.check_files(
-                arglist=['--putty-auto-ignore',
-                         '--putty-ignore=tests/__init__.py : +E261'],
+                arglist=[
+                    '--putty-auto-ignore',
+                    '--putty-ignore=tests/__init__.py : +E261',
+                ],
                 filename='tests/__init__.py',
             )
