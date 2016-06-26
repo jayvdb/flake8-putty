@@ -24,7 +24,6 @@ _IGNORE_OPTION = '--ignore={0}'.format(','.join(IGNORE_LIST))
 # Use a real filename `tests/__init__.py` to avoid
 # https://github.com/ar4s/flake8_tuple/issues/8
 
-
 class IntegrationTestBase(TestCase):
 
     """Integration test framework."""
