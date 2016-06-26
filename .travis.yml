@@ -16,7 +16,7 @@ env:
     # Workaround for https://github.com/jayvdb/flake8-putty/issues/16
     - VIRTUALENV_DOWNLOAD=no
   matrix:
-    - TOXENV=v25x,v241,v230,v224,v220,v210,v200
+    - TOXENV=v26x,v255,v241,v230,v224,v220,v210,v200
     - TOXENV=green
     - TOXENV=pytest
 
