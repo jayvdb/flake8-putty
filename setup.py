@@ -44,11 +44,6 @@ def get_long_description():
     return '\n\n'.join(descr)
 
 
-extras = {
-    'markers': ['packaging>=16.0'],
-}
-
-
 tests_require = ['pytest']
 if sys.version_info < (3, 3):
     tests_require.append('mock')
@@ -68,8 +63,8 @@ setup(
         # extensions were introduced in 2.0
         # flake8 v3 internals are very different
         'flake8>=2,<3',
+        'packaging>=16.0',
     ],
-    extras_require=extras,
     license='MIT',
     packages=[str('flake8_putty')],
     zip_safe=False,
