@@ -2,6 +2,13 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.4.0] - 2016-07-12
+- Microsoft Windows filename selector fixes, with Appveyor CI testing (a0c7c604)
+- Allow multiple codes to be disabled by per-line comments (4d5b9001)
+- Allow comment after each rule line (1220229e)
+- Prevent use with flake8 v3 (19bc89a1)
+- Support both pep8 and pycodestyle in test suite (4d2e1530)
+
 ## [0.3.2] - 2016-04-08
 - Fix regex selector matching multiple codes
 

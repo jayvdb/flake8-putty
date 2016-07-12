@@ -4,7 +4,7 @@ from __future__ import absolute_import, unicode_literals
 
 from flake8_putty.extension import PuttyExtension
 
-__version__ = '0.3.2'
+__version__ = '0.4.0'
 
 __all__ = ('PuttyExtension', )
 
