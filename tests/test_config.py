@@ -25,6 +25,24 @@ class TestParser(TestCase):
 
     """Test config option rule parser."""
 
+    def test_selector_comment_empty_line(self):
+        p = Parser('# foo')
+        assert list(p._lines()) == []
+
+    def test_selector_comment_suffix(self):
+        p = Parser('E100 : E101 # foo')
+        assert list(p._lines()) == [
+            (1, 'E100 : E101 # foo'),
+        ]
+
+        assert list(p._parsed_lines()) == [
+            (1, ['E100'], 'E101'),
+        ]
+
+        assert p._rules == [
+            Rule([CodeSelector('E100')], 'E101'),
+        ]
+
     def test_selector_code(self):
         p = Parser('E100 : E101')
         assert list(p._lines()) == [

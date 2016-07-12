@@ -308,6 +308,9 @@ class Parser(object):
             assert selectors
             assert codes
 
+            codes = codes.partition('#')[0].strip()
+            assert codes
+
             selectors = SELECTOR_SPLITTER.findall(selectors)
             selectors = [selector.strip() for selector in selectors]
 
