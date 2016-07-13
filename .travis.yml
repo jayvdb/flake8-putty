@@ -45,4 +45,6 @@ install:
 
 script:
 - if [[ "$TRAVIS_PYTHON_VERSION" == "3.2" ]]; then pip install 'virtualenv<14' ; fi
+- if [[ "$TRAVIS_PYTHON_VERSION" == "pypy3.3-5.2-alpha1" ]]; then pip install --upgrade virtualenv ; fi
+
 - tox
