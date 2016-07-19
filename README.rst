@@ -17,6 +17,9 @@ Flake8 Putty
    :alt: Pypi Entry
    :target: https://pypi.python.org/pypi/flake8-putty
 
+.. image:: https://img.shields.io/github/license/jayvdb/flake8-putty.svg
+   :target: https://opensource.org/licenses/MIT
+
 Flake8 Putty allows more control over errors reported by flake8,
 without adding noqa for every erroneous or undesirable error detected.
 
