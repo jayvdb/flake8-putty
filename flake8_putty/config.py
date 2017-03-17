@@ -302,7 +302,7 @@ class Parser(object):
                 pass
             try:
                 selectors, codes = line.rsplit(' : ', 1)
-            except RuntimeError:
+            except ValueError:
                 selectors, codes = line.rsplit(':', 1)
 
             assert selectors

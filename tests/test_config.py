@@ -322,6 +322,14 @@ class TestParser(TestCase):
             ),
         ]
 
+    def test_no_space(self):
+        p = Parser("""
+        file.py: E101
+        """)
+        assert list(p._parsed_lines()) == [
+            (2, ['file.py'], 'E101'),
+        ]
+
     def test_multiline(self):
         p = Parser("""
         E100 : E101
