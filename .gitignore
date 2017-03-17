@@ -11,3 +11,4 @@ build
 .coverage
 dist
 docs/_build/
+README.html
