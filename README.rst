@@ -30,6 +30,10 @@ If you only want better `noqa` support,
 `flake8-respect-noqa <https://pypi.python.org/pypi/flake8-respect-noqa>`_
 is a simpler extension which works only when multiprocessing is disabled.
 
+flake8-putty requires flake8 2. If you are looking for an extension
+compatible with flake8 3 that supports a subset of flake8-putty, see
+`flake8-per-file-ignores <https://github.com/snoack/flake8-per-file-ignores>`_.
+
 Disabling erroneous or undesirable errors by adding `noqa` in the code
 may be undesirable for a number of reasons, including:
 
