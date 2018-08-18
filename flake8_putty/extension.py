@@ -42,7 +42,7 @@ def get_reporter_state():
 
 
 def putty_ignore_code(options, code):
-    """Hook for pep8 'ignore_code'."""
+    """Implement pep8 'ignore_code' hook."""
     reporter, line_number, offset, text, check = get_reporter_state()
     try:
         line = reporter.lines[line_number - 1]
