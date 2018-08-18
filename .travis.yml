@@ -40,6 +40,8 @@ matrix:
 
 install:
   - pip install -r test-requirements.txt
+  - mkdir ~/.virtualenv/
+  - printf "[virtualenv]\nsystem-site-packages = True\n" > ~/.virtualenv/virtualenv.ini
   - pip install tox-travis
 
 script:
