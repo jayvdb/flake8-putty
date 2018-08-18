@@ -27,10 +27,10 @@ ENVIRONMENT_MARKER_PREFIXES = (
 
 def _stripped_codes(codes):
     """Return a tuple of stripped codes split by ','."""
-    return tuple(
+    return tuple([
         code.strip() for code in codes.split(',')
-        if code.strip(),
-    )
+        if code.strip()
+    ])
 
 
 class Selector(object):
