@@ -39,7 +39,7 @@ matrix:
       python: pypy3
 
 install:
-  - pip install -r test-requirements.txt
+  - pip install -U -r test-requirements.txt
   - mkdir ~/.virtualenv/
   - cp virtualenv.ini ~/.virtualenv/virtualenv.ini
 
