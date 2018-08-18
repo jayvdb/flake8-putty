@@ -1,4 +1,5 @@
 pip<18.0; python_version == '3.3'
 pip<10; python_version == '2.6'
 pip<8; python_version == '3.2'
+tox<3; python_version == '2.6' or python_version == '3.2' or python_version == '3.3'
 tox-travis
