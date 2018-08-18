@@ -224,11 +224,11 @@ class Rule(RegexRule):
 
     @property
     def all_selectors(self):
-        """Iterable of all selectors."""
+        """Return Iterable of all selectors."""
         return self._selectors
 
     def __eq__(self, other):
-        """True if other is instance of Rule with same codes and selectors."""
+        """Check whether other is a Rule with same codes and selectors."""
         if isinstance(other, self.__class__):
             return ((self._selectors, self.codes) ==
                     (other.all_selectors, other.codes))
