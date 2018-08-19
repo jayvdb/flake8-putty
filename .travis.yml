@@ -35,6 +35,10 @@ matrix:
     - env: TOXENV=green
       python: pypy3
 
+before_install:
+  - mkdir ~/.virtualenv/
+  - printf "[virtualenv]\nno_wheel = True\n" > ~/.virtualenv/virtualenv.ini
+
 install:
   - pip install -r test-requirements.txt
 
