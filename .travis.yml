@@ -12,9 +12,6 @@ python:
 - pypy3
 
 env:
-  global:
-    # Workaround for https://github.com/jayvdb/flake8-putty/issues/16
-    - VIRTUALENV_DOWNLOAD=no
   matrix:
     - TOXENV=v26x,v255,v241,v230,v224,v220,v210,v200
     - TOXENV=green
@@ -39,8 +36,7 @@ matrix:
       python: pypy3
 
 install:
-- pip install tox
+  - pip install -r test-requirements.txt
 
 script:
-- if [[ "$TRAVIS_PYTHON_VERSION" == "3.2" ]]; then pip install 'virtualenv<14' ; fi
 - tox
