@@ -3,7 +3,6 @@ pip<18.0; python_version == '3.3'
 pip<10; python_version == '2.6'
 pip<8; python_version == '3.2'
 tox<3; python_version == '2.6' or python_version == '3.2' or python_version == '3.3'
-wheel<0.30; python_version == '2.6' or python_version == '3.2' or python_version == '3.3'
 pytest-runner; python_version != '2.6'
 pytest-runner<2.12; python_version == '2.6'
 tox-travis
